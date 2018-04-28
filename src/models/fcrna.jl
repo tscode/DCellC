@@ -19,7 +19,7 @@ function density{I <: Image}(w, s, x, ::Type{FCRNA{I, false}})
   y = rconv(w[10], uconv(w[9], y))
   
   y = conv4(w[11], y, padding=pad(w[11]))
-  return reshape(y, shape(y)[[1,2,4]]...)
+  return reshape(y, size(y)[[1,2,4]]...)
 end
 
 
@@ -53,7 +53,7 @@ function density{I <: Image}(w, s, x, ::Type{FCRNA{I, true}})
   y = rbconv(w[20], s[10], w[19], ubconv(w[18], s[9], w[17], y))
   
   y = conv4(w[21], y, padding=pad(w[21]))
-  return reshape(y, shape(y)[[1,2,4]]...)
+  return reshape(y, size(y)[[1,2,4]]...)
 end
 
 
