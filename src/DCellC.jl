@@ -39,6 +39,9 @@ export Model, FCModel, Unetlike, Multiscale3, FCRNA,
 
 export train!, loss
 
+# legacy stuff
+export SharpCircleCell, SharpEllipticCell, 
+       synthesize, PP
 
 
 end # DCellC
