@@ -71,7 +71,8 @@ function loss(w, s, imgdata, lbls :: Vector{Label},
 
   _at = (at != nothing) ? at : arraytype(imgdata)
 
-  prmap   = proxymap(imgsize(imgdata)..., lbls; at = _at, kwargs...)
+  prmap   = proxymap(imgsize(imgdata)..., lbls; kwargs...)
+  prmap   = packproxymap(prmap)
   imgdata = packimage(imgdata, at = _at)
   return loss(w, s, imgdata, prmap, mt; at = at, kwargs...)
 end
@@ -122,8 +123,9 @@ end
 
 function packbatches(batches; at = nothing, kwargs...)
   return map(batches) do batch
+    prmaps = proxymap(imgsize(imgs)..., batch[2]; kwargs...)
+    prmaps = packproxymap(prmaps)
     imgs   = packimage(batch[1], at = at)
-    prmaps = proxymap(imgsize(imgs)..., batch[2]; at = at, kwargs...)
     return (imgs, prmaps)
   end
 end
