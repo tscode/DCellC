@@ -60,7 +60,7 @@ function loss(w, s, imgdata, prmap,
     imgdata = packimage(imgdata, at = at)
   end
   
-  return mean(abs2, density(w, s, imgdata, mt) .- prmap)
+  return sum(abs2, density(w, s, imgdata, mt) .- prmap) / length(prmap)
 end
 
 
@@ -103,7 +103,7 @@ end
 _gradloss = gradloss(loss)  # Calculate both the gradient and loss value
 _grad     = grad(loss)
 
-lossgrad(args...; kwargs...) = _gradloss(args...; kwargs...)[end:-1:1]
+lossgrad(args...; kwargs...) = _gradloss(args...; kwargs...)[2:-1:1]
 
 function lossgrad{I <: Image}(m :: Model{I}, img :: I, lbl :: Label; kwargs...) 
   return lossgrad(weights(m), state(m), img, lbl, typeof(m); kwargs...)
@@ -123,11 +123,11 @@ function makebatches(imgs, lbls, batchsize; shuffle = false)
   return [ (imgs[range], lbls[range]) for range in idxs ]
 end
 
-function packbatches(batches; at = nothing, kwargs...)
+function packbatches(batches; at = Array{Float32}, kwargs...)
   return map(batches) do batch
     imgs   = packimage(batch[1], at = at)
     prmaps = proxymap(imgsize(imgs)..., batch[2]; kwargs...)
-    prmaps = packproxymap(prmaps)
+    prmaps = packproxymap(prmaps, at = at)
     return (imgs, prmaps)
   end
 end
@@ -321,7 +321,7 @@ function train!(model :: Model, imgs, lbls;
   # Update the model weights and its state
 
   weights(model)[:] = convert.(Array{Float32}, w)
-  state(model)[:] = convert.(Array{Float32}, s)
+  state(model)[:]   = s
 
   @printf "\n"
   @printf "# End of training process after %.1f seconds\n" time
