@@ -16,7 +16,7 @@ function density{I <: Image}(w, s, x, ::Type{Multiscale3{I, false}})
   y2 = rconv(w[4], pool(rconv(w[3], x)))
   y3 = rconv(w[6], rconv(w[5], pool(y1)))
 
-  y4 = rconv(w[8], rconv(w[7], cat(3, pool(y2), pool(y3))))
+  y4 = rconv(w[8], rconv(w[7], cat3(pool(y2), pool(y3))))
   y5 = rconv(w[11], rconv(w[10], uconv(w[9], y3, y4)))
   y6 = rconv(w[14], rconv(w[13], uconv(w[12], y1, y5)))
 
@@ -52,7 +52,7 @@ function density{I <: Image}(w, s, x, ::Type{Multiscale3{I, true}})
   y2 = rbconv(w[8], s[4], w[7], pool(rbconv(w[6], s[3], w[5], x)))
   y3 = rbconv(w[12], s[6], w[11], rbconv(w[10], s[5], w[9], pool(y1)))
 
-  u4 = cat(3, pool(y2), pool(y3))
+  u4 = cat3(pool(y2), pool(y3))
   y4 = rbconv(w[16], s[8], w[15], rbconv(w[14], s[7], w[13], u4))
 
   u5 = ubconv(w[18], s[9], w[17], y3, y4)

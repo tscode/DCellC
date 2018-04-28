@@ -102,6 +102,19 @@ end
 # --------------------------------------------------------------------------- #
 # Auxilliary functions to implement fully convolutional neural networks
 
+# Concatenation along the third axis (not natively implemented in Knet)
+function cat3(a, b) 
+
+  sa, sb = size(a), size(b)
+
+  @assert sa[[1,2,4]] == sb[[1,2,4]]
+
+  _a = reshape(a, prod(sa[1:2]), sa[3:4]...)
+  _b = reshape(b, prod(sb[1:2]), sb[3:4]...)
+
+  return reshape(hcat(_a, _b), sa[1:2]..., sa[3]+sb[3], sa[4])
+end
+
 # Padding for convolution such that dimensions are preserved
 pad(w) = floor(Int, size(w, 1) / 2)
 
@@ -118,11 +131,11 @@ uconv(w, x) = deconv4(w, x, stride=2, padding=1)
 ubconv(wb, m, wc, x) = batchnorm(deconv4(wc, x, stride=2, padding=1), m, wb)
 
 # Up-convolution and stacking
-uconv(w, x, y) = cat(3, x, deconv4(w, y, stride=2, padding=1))
+uconv(w, x, y) = cat3(x, deconv4(w, y, stride=2, padding=1))
 
 # Up-convolution, batch normalization, and stacking
 ubconv(wb, m, wc, x, y) = 
-    cat(3, x, batchnorm(deconv4(wc, y, stride=2, padding=1), m, wb))
+    cat3(x, batchnorm(deconv4(wc, y, stride=2, padding=1), m, wb))
 
 
 # Default initialization for convolution kernel

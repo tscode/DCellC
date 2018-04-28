@@ -49,8 +49,8 @@ end
   "--batch-normalization", "-B"
     help = "whether to activate batch normalization"
     action = :store_true
-  "--gpu"
-    help = "whether to use gpu acceleration"
+  "--no-gpu"
+    help = "prevent usage of gpu acceleration even if gpu support is detected"
     action = :store_true
   "--epochs", "-e"
     help = "number of training epochs"
@@ -184,12 +184,12 @@ if args["%COMMAND%"] == "train"
     println(STDERR, "Optimizer $(args["optimizer"]) not recognized")
   end
 
-  if args["gpu"]
-    println("# GPU Mode ($(gpu()))")
-    at = KnetArray{Float32}
-  else
+  if args["no-gpu"] || gpu() < 0
     println("# CPU Mode")
     at = Array{Float32}
+  else
+    println("# GPU Mode ($(gpu()))")
+    at = KnetArray{Float32}
   end
 
   train!(model, train_data, 

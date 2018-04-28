@@ -19,7 +19,9 @@ function packweight(w :: Vector{Any}; at = Array{Float32})
 end
 
 function packstate(s :: Vector{Any}; at = Array{Float32})
-  return map(x -> convert(at, x), s)
+  return s
+  # Cannot convert Knet Moments to gpu values!
+  #return map(x -> convert(at, x), s)
 end
 
 function packproxymap(prmap; at = Array{Float32})
