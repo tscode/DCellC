@@ -71,9 +71,9 @@ function loss(w, s, imgdata, lbls :: Vector{Label},
 
   _at = (at != nothing) ? at : arraytype(imgdata)
 
+  imgdata = packimage(imgdata, at = _at)
   prmap   = proxymap(imgsize(imgdata)..., lbls; kwargs...)
   prmap   = packproxymap(prmap)
-  imgdata = packimage(imgdata, at = _at)
   return loss(w, s, imgdata, prmap, mt; at = at, kwargs...)
 end
 
@@ -123,9 +123,9 @@ end
 
 function packbatches(batches; at = nothing, kwargs...)
   return map(batches) do batch
+    imgs   = packimage(batch[1], at = at)
     prmaps = proxymap(imgsize(imgs)..., batch[2]; kwargs...)
     prmaps = packproxymap(prmaps)
-    imgs   = packimage(batch[1], at = at)
     return (imgs, prmaps)
   end
 end
@@ -198,7 +198,7 @@ function train!(model :: Model, imgs, lbls;
     @printf "# model      %s\n" typeof(model)
     @printf "# date       %s\n" now()
     @printf "# patches    %d\n" length(imgs)
-    @printf "# patchsize  %d\n" imgsize(imgs[1])
+    @printf "# patchsize  %s\n" imgsize(imgs[1])
     @printf "# batches    %d\n" n
     @printf "# batchsize  %d\n" batchsize
     @printf "# epochs     %d\n" epochs
