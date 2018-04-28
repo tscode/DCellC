@@ -11,7 +11,7 @@ end
 # --------------------------------------------------------------------------- #
 # Network architecture (no batch normalization)
 
-function densitymap{I <: Image}(w, s, x, ::Type{Multiscale3{I, false}})
+function density{I <: Image}(w, s, x, ::Type{Multiscale3{I, false}})
   y1 = rconv(w[2], rconv(w[1], x))
   y2 = rconv(w[4], pool(rconv(w[3], x)))
   y3 = rconv(w[6], rconv(w[5], pool(y1)))
@@ -47,7 +47,7 @@ init_state{I<:Image}(::Type{Multiscale3{I, false}}) = Any[]
 # --------------------------------------------------------------------------- #
 # Network architecture (batch normalization)
 
-function densitymap{I <: Image}(w, s, x, ::Type{Multiscale3{I, true}})
+function density{I <: Image}(w, s, x, ::Type{Multiscale3{I, true}})
   y1 = rbconv(w[4], s[2], w[3], rbconv(w[2], s[1], w[1], x))
   y2 = rbconv(w[8], s[4], w[7], pool(rbconv(w[6], s[3], w[5], x)))
   y3 = rbconv(w[12], s[6], w[11], rbconv(w[10], s[5], w[9], pool(y1)))

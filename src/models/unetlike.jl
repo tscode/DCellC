@@ -11,7 +11,7 @@ end
 # --------------------------------------------------------------------------- #
 # Network architecture (no batch normalization)
 
-function densitymap{I <: Image}(w, s, x, ::Type{UNetLike{I, false}})
+function density{I <: Image}(w, s, x, ::Type{UNetLike{I, false}})
   y1 = rconv(w[2], rconv(w[1], x))
   y2 = rconv(w[4], rconv(w[3], pool(y1)))
   y3 = rconv(w[6], rconv(w[5], pool(y2)))
@@ -50,7 +50,7 @@ init_state{I<:Image}(::Type{UNetLike{I, false}}) = Any[]
 # --------------------------------------------------------------------------- #
 # Network architecture (batch normalization)
 
-function densitymap{I <: Image}(w, s, x, ::Type{UNetLike{I, true}})
+function density{I <: Image}(w, s, x, ::Type{UNetLike{I, true}})
   y1 = rbconv(w[4],  s[2], w[3],  rbconv(w[2],  s[1], w[1],  x))
   y2 = rbconv(w[8],  s[4], w[7],  rbconv(w[6],  s[3], w[5],  pool(y1)))
   y3 = rbconv(w[12], s[6], w[11], rbconv(w[10], s[5], w[9],  pool(y2)))

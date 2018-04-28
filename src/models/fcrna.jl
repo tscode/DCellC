@@ -11,7 +11,7 @@ end
 # --------------------------------------------------------------------------- #
 # Network architecture (no batch normalization)
 
-function densitymap{I <: Image}(w, s, x, ::Type{FCRNA{I, false}})
+function density{I <: Image}(w, s, x, ::Type{FCRNA{I, false}})
   y = rconv(w[2],  pool(rconv(w[1], x)))
   y = rconv(w[4],  pool(rconv(w[3], pool(y))))
   y = rconv(w[6],  uconv(w[5], y))
@@ -44,7 +44,7 @@ init_state{I<:Image}(::Type{FCRNA{I, false}}) = Any[]
 # --------------------------------------------------------------------------- #
 # Network architecture (batch normalization)
 
-function densitymap{I <: Image}(w, s, x, ::Type{FCRNA{I, true}})
+function density{I <: Image}(w, s, x, ::Type{FCRNA{I, true}})
   y = rbconv(w[4],  s[2],  w[3],  pool(rbconv(w[2], s[1], w[1], x)))
   y = rbconv(w[8],  s[4],  w[7],  pool(rbconv(w[6], s[3], w[5], pool(y))))
   y = rbconv(w[12], s[6],  w[11], ubconv(w[10], s[5], w[9], y))

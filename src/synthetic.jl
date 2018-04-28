@@ -10,12 +10,12 @@ abstract type Cell end
 struct SharpCircleCell <: Cell
   radius :: Tuple{Float64, Float64}
   mag :: Tuple{Float64, Float64}
+  SharpCircleCell(r, m) = new((r...), (m...))
 end
 
 SharpCircleCell(r::Real, m::Real = 1.) = SharpCircleCell((r, r), (m, m))
 SharpCircleCell(r, m::Real = 1.) = SharpCircleCell((r...), (m, m))
 SharpCircleCell(r::Real, m) = SharpCircleCell((r, r), (m...))
-SharpCircleCell(r, m) = SharpCircleCell((r...), (m...))
 
 function (c::SharpCircleCell)()
   s = rand(2)
@@ -39,12 +39,12 @@ end
 struct SharpEllipticCell <: Cell
   axes :: Tuple{Float64, Float64}
   mag :: Tuple{Float64, Float64}
+  SharpEllipticCell(r, m) = new((r...), (m...))
 end
 
 SharpEllipticCell(r::Real, m::Real = 1.) = SharpEllipticCell((r, r), (m, m))
 SharpEllipticCell(r, m::Real = 1.) = SharpEllipticCell((r...), (m, m))
-SharpEllipticCell(r::Real, m = 1.) = SharpEllipticCell((r, r), (m...))
-SharpEllipticCell(r, m = 1.) = SharpEllipticCell((r...), (m...))
+SharpEllipticCell(r::Real, m) = SharpEllipticCell((r, r), (m...))
 
 function (c::SharpEllipticCell)()
   s = rand(4)

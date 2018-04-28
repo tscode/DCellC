@@ -19,7 +19,7 @@ JLD2.jl.
 ```
 They should be fetched automatically when installing this package via
 ```julia
-Pkg.clone("...")
+Pkg.clone("https://github.com/tscode/DCellC.jl.git")
 ```
 from a `julia 0.6` REPL. 
 

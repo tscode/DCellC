@@ -81,7 +81,7 @@ struct Soften <: ImageOp
   kernelsize :: Int
 end
 
-Soften(;kernelsize = 3) = Soften(kernelsize)
+Soften(; kernelsize = 3) = Soften(kernelsize)
 
 function apply{I <: Image}(img :: I, lbl :: Label, op :: Soften)
   return I(imfilter(data(img), Kernel.gaussian(op.kernelsize))), lbl
@@ -97,7 +97,7 @@ end
 
 PixelNoise(; source = rand, amplitude = 0.2) = PixelNoise(source, amplitude)
 
-function apply{I <: Image}(img :: I, lbl :: Label, op :: Soften)
+function apply{I <: Image}(img :: I, lbl :: Label, op :: PixelNoise)
   return I(data(img) + op.amplitude * op.source(size(img))), lbl
 end
 

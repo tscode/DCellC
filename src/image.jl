@@ -12,6 +12,11 @@ struct GreyscaleImage <: Image
   data :: Array{Float32, 2} 
 end
 
+function GreyscaleImage(data :: Array{Float32, 3})
+  @assert size(data, 3) == 1
+  GreyscaleImage(reshape(data, size(data)[1:2]))
+end
+
 # --------------------------------------------------------------------------- #
 # RGB Images
 
@@ -47,7 +52,7 @@ function ordered_patches{I <: Image}(img :: I, lbl;
   # Note: components of argument size should be divisible by 8,
   # otherwise some (multiresolution) networks will not like the input
 
-  n, m = Base.size(img)[1:2]
+  n, m = imgsize(img)
 
   @assert (n >= size[1] && m >= size[2])
   @assert (-margin < min(size...))
@@ -71,7 +76,7 @@ function ordered_patches{I <: Image}(img :: I, lbl;
     ii = i + size[1] - 1
     jj = j + size[2] - 1
     sel = (i .<= lbl.data[2,:] .<= ii) .& (j .<= lbl.data[1,:] .<= jj)
-    push!(imgs, I(img.data[i:ii, j:jj]))
+    push!(imgs, I(img.data[i:ii, j:jj, :]))
     push!(lbls, Label(lbl.data[:,sel] .- [j-1, i-1]))
   end
 
@@ -83,14 +88,15 @@ function ordered_patches{I <: Image}(img :: I, lbl;
 end
 
 
-function random_patches{I <: Image}(img :: I, number; 
+function random_patches{I <: Image}(img :: I, lbl, number; 
                                     size = (128, 128), 
-                                    aug = Function[])
+                                    imageop = NoOp(),
+                                    multitude = 1)
 
   # Note: components of argument size should be divisible by 8,
   # otherwise some (multiresolution) networks will not like the input
 
-  n, m = Base.size(img)[1:2]
+  n, m = imgsize(img)
   @assert (n >= size[1] && m >= size[2])
 
   imgs = I[]
@@ -101,7 +107,7 @@ function random_patches{I <: Image}(img :: I, number;
     ii = i + size[1] - 1
     jj = j + size[2] - 1
     sel = (i .<= lbl.data[2,:] .<= ii) .& (j .<= lbl.data[1,:] .<= jj)
-    push!(imgs, I(img.data[i:ii, j:jj]))
+    push!(imgs, I(img.data[i:ii, j:jj, :]))
     push!(lbls, Label(lbl.data[:,sel] .- [j-1, i-1]))
   end
 
@@ -113,8 +119,13 @@ function random_patches{I <: Image}(img :: I, number;
 end
 
 
-ordered_patches(img; kwargs...) = ordered_patches(img, Label(); kwargs...)[1]
-random_patches(img; kwargs...) = random_patches(img, Label(); kwargs...)[1]
+function ordered_patches(img; kwargs...) 
+  return ordered_patches(img, Label(); kwargs...)[1]
+end
+
+function random_patches(img, number; kwargs...)
+  return random_patches(img, Label(), number; kwargs...)[1]
+end
 
 
 # --------------------------------------------------------------------------- #
@@ -126,7 +137,7 @@ imgsize(a) = size(a)[1:2]
 imgchannels(::GreyscaleImage) = 1
 imgchannels(::RGBImage) = 3
 imgchannels(::Type{<: GreyscaleImage}) = 1
-imgchannels(::Type{<: RGBImage}) = 1
+imgchannels(::Type{<: RGBImage}) = 3
 
 #Base.convert{A}(::Type{A}, img::GreyscaleImage) = convert(A, img.data)
 Base.size(img::Image, args...; kwargs...) = size(img.data, args..., kwargs...)

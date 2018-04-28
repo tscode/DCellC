@@ -14,56 +14,51 @@ Label() = Label(zeros(Int, 2, 0))
 
 
 # --------------------------------------------------------------------------- #
-# Estimate labels 
+# Proximity maps
+# Proxymaps are "washed out" 2d arrays with peaks at given label positions
 
-function label(dens :: Array{Float32, 2}; 
-               candidates = false, level = 25, clevel = 10) 
+function proxymap(width, height, lbls :: Vector{Label}; 
+                  stddev :: Real = kernelsize/4,
+                  kernelsize :: Int = 7, 
+                  peakheight :: Real = 100)
 
-  # Find local maxima that are sufficiently high
+  # Create proximity maps from labels
+  # Each point in the label gets converted to a gaussian activation
 
-  label = Array{Int}[]
-  cands = Array{Int}[]
+  n = length(lbls)
 
-  m, n = size(dens)
-
-  for i in 1:m, j in 1:n
-    xsel = max(i-1, 1):min(i+1, m)
-    ysel = max(j-1, 1):min(j+1, n)
-
-    if dens[i, j] < maximum(dens[xsel, ysel])
-      continue
-    end
-
-    if dens[i, j] >= level
-      push!(label, [j, i])
-    elseif dens[i, j] >= clevel
-      push!(cands, [j, i])
+  # Pixel map
+  prmap = zeros(Float32, width, height, 1, n)
+  for i in 1:n 
+    label = lbls[i]
+    for j in 1:size(label.data, 2)
+      x, y = label.data[:, j]
+      prmap[y, x, 1, i] = 1.
     end
   end
 
-  label = isempty(label) ? zeros(Int, 2, 0) : hcat(label...)
-  cands = isempty(cands) ? zeros(Int, 2, 0) : hcat(cands...)
+  # Convolve the pixel-map with a suitable kernel
+  c = ceil(Int, kernelsize/2)
+  kernel = Float32[ exp(- ((i - c)^2 + (j - c)^2) / (2stddev^2)) 
+                    for i in 1:kernelsize, j in 1:kernelsize ]
+  kernel = reshape(kernel, size(kernel)..., 1, 1)
 
-  if candidates
-    return Label(label), Label(cands)
-  else
-    return Label(label)
-  end
+  # Scale the output such that deviations from real labels are
+  # punished more than deviations from the background
+  pad = floor(Int, kernelsize/2)
+  prmap = reshape(conv4(kernel, prmap, padding=pad), width, height, n)
+
+  return peakheight * prmap
 end
 
-function label(dens :: Array{Float32, 3}; kwargs...)
-  return label.([dens[:,:,i] for i in 1:size(dens, 3)]; kwargs...)
-end
-
-function label(args...; kwargs...)
-  dmap = densitymap(args...; kwargs...)
-  return label(convert(Array{Float32}, dmap))
+function proxymap(width, height, lbl :: Label; kwargs...)
+  return reshape(proxymap(width, height, [lbl]; kwargs...), width, height)
 end
 
 
 # --------------------------------------------------------------------------- #
-# Performance of density-based label compared to true label
-# "mean smallest distance"
+# Adjacency
+# Calculates a list of smallest distances between the spots in two labels
 
 function adjacency(dlbl, tlbl)
   if isempty(dlbl.data) && isempty(tlbl.data)

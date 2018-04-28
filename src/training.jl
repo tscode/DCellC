@@ -1,74 +1,33 @@
 
 # --------------------------------------------------------------------------- #
 # Prepare layout for batches of images, weights, states and prmaps
+# For suitable arraytypes, this will transfer the data into the graphics
+# memory
 
-function imgpack(img :: Image; at = Array{Float32})
+function packimage(img :: Image; at = Array{Float32})
  pack = reshape(imgdata(img), imgsize(img)..., imgchannels(img), 1)
  return convert(at, pack)
 end
 
-function imgpack(imgs :: Vector{<: Image}; at = Array{Float32})
-  pack = cat(4, map(imgpack, imgs)...)
+function packimage(imgs :: Vector{<: Image}; at = Array{Float32})
+  pack = cat(4, map(packimage, imgs)...)
   return convert(at, pack)
 end
 
-function weightpack(w :: Vector{Any}; at = Array{Float32})
+function packweight(w :: Vector{Any}; at = Array{Float32})
   return map(x -> convert(at, x), w)
 end
 
-function statepack(s :: Vector{Any}; at = Array{Float32})
+function packstate(s :: Vector{Any}; at = Array{Float32})
   return map(x -> convert(at, x), s)
 end
 
-function prmappack(prmap; at = Array{Float32})
+function packproxymap(prmap; at = Array{Float32})
   if length(size(prmap)) < 3
     return convert(at, reshape(prmap, size(prmap)..., 1))
   else
     return convert(at, prmap)
   end
-end
-
-
-# --------------------------------------------------------------------------- #
-# Proximity maps
-
-function proximitymap(width, height, lbls :: Vector{Label}; 
-                      kernelsize :: Int = 7, 
-                      stddev :: Real = kernelsize/4,
-                      peakheight :: Real = 100,
-                      at = Array{Float32})
-
-  # Create proximity maps from labels
-  # Each point in the label gets converted to a gaussian activation
-
-  n = length(lbls)
-
-  # Pixel map
-  map = zeros(Float32, width, height, 1, n)
-  for i in 1:n 
-    label = lbls[i]
-    for j in 1:size(label.data, 2)
-      x, y = label.data[:, j]
-      map[y, x, 1, i] = 1.
-    end
-  end
-
-  # Convolve the pixel map with a suitable kernel
-  c = ceil(Int, kernelsize/2)
-  kernel = Float32[ exp(- ((i - c)^2 + (j - c)^2) / (2stddev^2)) 
-                    for i in 1:kernelsize, j in 1:kernelsize ]
-  kernel = reshape(kernel, size(kernel)..., 1, 1)
-
-  # Scale the output such that deviations from real labels are
-  # punished more than deviations from the background
-  pad = floor(Int, kernelsize/2)
-  prmap = peakheight * reshape(conv4(kernel, map, padding=pad), width, height, n)
-
-  return prmappack(prmap, at = at)
-end
-
-function proximitymap(width, height, lbl :: Label; kwargs...)
-  return reshape(proximitymap(width, height, [lbl]; kwargs...), width, height)
 end
 
 # --------------------------------------------------------------------------- #
@@ -93,13 +52,13 @@ function loss(w, s, imgdata, prmap,
   # is specified, conversion might take place.
 
   if at != nothing
-    w       = weightpack(w, at = at)
-    s       = statepack(s,  at = at)
-    prmap   = prmappack(prmap, at = at)
-    imgdata = imgpack(imgdata, at = at)
+    w       = packweight(w, at = at)
+    s       = packstate(s,  at = at)
+    prmap   = packproxymap(prmap, at = at)
+    imgdata = packimage(imgdata, at = at)
   end
   
-  return mean(abs2, densitymap(w, s, imgdata, mt) .- prmap)
+  return mean(abs2, density(w, s, imgdata, mt) .- prmap)
 end
 
 
@@ -112,8 +71,8 @@ function loss(w, s, imgdata, lbls :: Vector{Label},
 
   _at = (at != nothing) ? at : arraytype(imgdata)
 
-  prmap   = proximitymap(imgsize(imgdata)..., lbls; at = _at, kwargs...)
-  imgdata = imgpack(imgdata, at = _at)
+  prmap   = proxymap(imgsize(imgdata)..., lbls; at = _at, kwargs...)
+  imgdata = packimage(imgdata, at = _at)
   return loss(w, s, imgdata, prmap, mt; at = at, kwargs...)
 end
 
@@ -126,7 +85,7 @@ function loss{I <: Image}(w, s, img :: I, lbl :: Label,
 
   _at = (at != nothing) ? at : arraytype(imgdata(img))
 
-  x = imgpack(img, at = _at)
+  x = packimage(img, at = _at)
   return loss(w, s, x, [lbl], mt; at = at, kwargs...)
 end
 
@@ -163,8 +122,8 @@ end
 
 function packbatches(batches; at = nothing, kwargs...)
   return map(batches) do batch
-    imgs   = imgpack(batch[1], at = at)
-    prmaps = proximitymap(imgsize(imgs)..., batch[2]; at = at, kwargs...)
+    imgs   = packimage(batch[1], at = at)
+    prmaps = proxymap(imgsize(imgs)..., batch[2]; at = at, kwargs...)
     return (imgs, prmaps)
   end
 end
@@ -190,8 +149,8 @@ function train!(model :: Model, imgs, lbls;
   # In practice this means to transfer them to 
   # gpu memory if a gpu based arratype is given.
 
-  w = weightpack(weights(model), at = at)
-  s = statepack(state(model), at = at)
+  w = packweight(weights(model), at = at)
+  s = packstate(state(model), at = at)
 
   # Initialize the optimizers and conduct some 
   # general preparations
@@ -430,7 +389,7 @@ function train!(model :: Model, img :: Image, lbl :: Label;
 
     if log || record
 
-      dens = densitymap(model, img)
+      dens = density(model, img)
       dlbl = label(dens)
 
       c      = length.(dlbl) ./ length.(lbl)
