@@ -34,7 +34,7 @@ export Label, adjacency, proxymap
 export ImageOp, Pipeline, apply,
        NoOp, Flip, Soften, PixelNoise
 
-export Model, FCModel, Unetlike, Multiscale3, FCRNA,
+export Model, FCModel, UNetLike, Multiscale3, FCRNA,
        weights, state, save, load, density, label
 
 export train!, loss
