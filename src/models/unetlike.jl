@@ -21,7 +21,8 @@ function density{I <: Image}(w, s, x, ::Type{UNetLike{I, false}})
   z2 = rconv(w[14], rconv(w[13], uconv(w[12], y2, z3))) 
   z1 = rconv(w[17], rconv(w[16], uconv(w[15], y1, z2)))
 
-  return conv4(w[18], z1, padding=pad(w[18]))[:,:,1,:]
+  y = conv4(w[18], z1, padding=pad(w[18]))
+  return reshape(y, size(y)[[1,2,4]]...)
 end
 
 
@@ -65,7 +66,8 @@ function density{I <: Image}(w, s, x, ::Type{UNetLike{I, true}})
   u1 = ubconv(w[30], s[15], w[29], y1, z2)
   z1 = rbconv(w[34], s[17], w[33], rbconv(w[32], s[16], w[31], u1))
 
-  return conv4(w[35], z1, padding=pad(w[35]))[:,:,1,:]
+  y = conv4(w[35], z1, padding=pad(w[35]))
+  return reshape(y, size(y)[[1,2,4]]...)
 end
 
 

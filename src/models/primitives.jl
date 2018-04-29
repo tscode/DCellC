@@ -10,29 +10,36 @@ function setidx!(a::KnetArray, v, I...)
     setindex!(a, v, vec(linind))
 end
 
-function cat3(a :: KnetArray{Float32, 4}, b :: KnetArray{Float32, 4})
-  sa, sb = size(a), size(b)
+# This can only be done efficiently with knet-Arrays in case of 
+# batchsize = 1, when permutedims is a no-op
+function cat3(a, b)
 
-  @assert sa[[1,2,4]] == sb[[1,2,4]]
+  if size(a, 4) == 1
+    k = size(a)[1:2]
+    sa, sb = size(a, 3), size(b, 3)
 
-  c = similar(a, sa[1], sa[2], (sa[3]+sb[3]), sa[4])
-  setidx!(c, a, :, :, 1:sa[3], :)
-  setidx!(c, b, :, :, (sa[3]+1):(sa[3]+sb[3]), :)
-  return c
+    ar, br = reshape(a, prod(k), sa), reshape(b, prod(k), sb)
+    cr = reshape(hcat(ar, br), k..., sa + sb, 1)
+
+    return cr
+
+  else
+    ap, bp = permutedims(a, (1,2,4,3)), permutedims(b, (1,2,4,3))
+    sa, sb = size(ap, 4), size(bp, 4)
+
+    k = size(ap)[1:3]
+    ap, bp = reshape(ap, prod(k), sa), reshape(bp, prod(k), sb)
+
+    cp = hcat(ap, bp)
+    cp = reshape(cp, k..., sa + sb)
+  
+    return permutedims(cp, (1, 2, 4, 3))
+  end
+
 end
 
 
-function cat3(a :: Array{Float32, 4}, b :: Array{Float32, 4}) 
-
-  sa, sb = size(a), size(b)
-
-  @assert sa[[1,2,4]] == sb[[1,2,4]]
-
-  _a = reshape(a, prod(sa[1:2]), sa[3:4]...)
-  _b = reshape(b, prod(sb[1:2]), sb[3:4]...)
-
-  return reshape(hcat(_a, _b), sa[1:2]..., sa[3]+sb[3], sa[4])
-end
+cat3(a :: Array{Float32, 4}, b :: Array{Float32, 4}) = cat(3, a, b)
 
 
 # --------------------------------------------------------------------------- #

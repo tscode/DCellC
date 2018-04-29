@@ -20,7 +20,8 @@ function density{I <: Image}(w, s, x, ::Type{Multiscale3{I, false}})
   y5 = rconv(w[11], rconv(w[10], uconv(w[9], y3, y4)))
   y6 = rconv(w[14], rconv(w[13], uconv(w[12], y1, y5)))
 
-  return conv4(w[15], y6, padding=pad(w[15]))[:,:,1,:]
+  y = conv4(w[15], y6, padding=pad(w[15]))
+  return reshape(y, size(y)[[1,2,4]]...)
 end
 
 
@@ -61,7 +62,8 @@ function density{I <: Image}(w, s, x, ::Type{Multiscale3{I, true}})
   u6 = ubconv(w[24], s[12], w[23], y1, y5)
   y6 = rbconv(w[28], s[14], w[27], rbconv(w[26], s[13], w[25], u6))
 
-  return conv4(w[29], y6, padding=pad(w[29]))[:,:,1,:]
+  y = conv4(w[29], y6, padding=pad(w[29]))
+  return reshape(y, size(y)[[1,2,4]]...)
 end
 
 
