@@ -232,8 +232,8 @@ function train!(model :: Model, imgs, lbls;
 
     if log
       @printf "\n"
-      @printf "# Epoche  Batch   Loss  Count  MeanAdj   MaxAdj  Weights\n"
-      @printf "# -------------------------------------------------------\n"
+      @printf "# Epoche  Batch   Loss  Count  MeanAdj   MaxAdj \n"
+      @printf "# ----------------------------------------------\n"
     end
 
     # Training epoche
