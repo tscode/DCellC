@@ -31,26 +31,6 @@ end
 
 
 # --------------------------------------------------------------------------- #
-# Saving and loading
-
-function save(model :: Model, fname :: String; description :: String = "")
-  Jld2.jldopen(fname, true, true, true, IOStream) do file
-    write(file, "model", model)
-    write(file, "description", description)
-  end
-end
-
-function load(fname :: String; description :: Bool = false)
-  d = description
-  JLD2.@load fname model description
-  if d return model, description
-  else return model
-  end
-end
-
-
-
-# --------------------------------------------------------------------------- #
 # Estimate labels
 # Densities are the output of the application of a neural network regressor
 

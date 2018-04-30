@@ -10,6 +10,7 @@ abstract type Image end
 
 struct GreyscaleImage <: Image
   data :: Array{Float32, 2} 
+  GreyscaleImage(data) = new(autoscale(convert(Array{Float32}, data)))
 end
 
 function GreyscaleImage(data :: Array{Float32, 3})
@@ -22,6 +23,7 @@ end
 
 struct RGBImage <: Image
   data :: Array{Float32, 3} 
+  RGBImage(data) = new(autoscale(convert(Array{Float32}, data)))
 end
 
 
@@ -139,7 +141,5 @@ imgchannels(::RGBImage) = 3
 imgchannels(::Type{<: GreyscaleImage}) = 1
 imgchannels(::Type{<: RGBImage}) = 3
 
-#Base.convert{A}(::Type{A}, img::GreyscaleImage) = convert(A, img.data)
 Base.size(img::Image, args...; kwargs...) = size(img.data, args..., kwargs...)
-
 

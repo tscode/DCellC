@@ -1,9 +1,18 @@
 
+
+function autoscale{R <: Real}( img :: Array{R} )
+  m = minimum(img)
+  d = maximum(img) - m
+  return clamp.((img - m) / d, 0, 1)
+end
+
+second{T, S}(t :: Tuple{T, S}) = t[2]
+
 # --------------------------------------------------------------------------- #
 # Import external functionality
 
-#=import Colors=#
-#=import ImageView=#
+import Colors
+import ImageView
 
 # --------------------------------------------------------------------------- #
 # Utility function that shows a (greyscale) image as well as labels
@@ -39,4 +48,3 @@ function imshow( img :: GreyscaleImage, label;
   end
   return gdict
 end
-

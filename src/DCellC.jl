@@ -7,6 +7,8 @@ module DCellC
 using Knet
 
 import Colors
+import FileIO
+import Images
 import ImageFiltering
 import JLD2
 
@@ -20,13 +22,14 @@ include("imageop.jl")
 include("synthetic.jl")
 include("model.jl")
 include("training.jl")
+include("io.jl")
 include("util.jl")
 
 # --------------------------------------------------------------------------- #
 # Exports
 
 export Image, GreyscaleImage, RGBImage, 
-       ordered_patches, random_patches, 
+       ordered_patches, random_patches,
        imgdata, imgsize, imgchannels
 
 export Label, adjacency, proxymap
@@ -43,5 +46,7 @@ export train!, loss
 export SharpCircleCell, SharpEllipticCell, 
        synthesize, PP
 
+export fileext, imgsave, imgload, lblsave, lblload,
+       lmgsave, lmgload, modelsave, modelload
 
 end # DCellC

@@ -136,13 +136,56 @@ end
 # --------------------------------------------------------------------------- #
 # High level training function
 
+"""
+    train!(model, imgs, lbls; kwargs...)
+
+    train!(model, lmgs; kwargs...)
+
+Train a model `model` using the images `imgs` and labels `lbls`. Alternatively, an iterable `lmgs` of labeled images can be provided.
+
+# Arguments
+- `testset`: an iterable of labeled images to be used for testing the network.
+- `epochs = 10`: the number of epochs (iterations of the training images)
+  used for training.
+- `batchsize = 1`: the size of a batch used for one update step of the model.
+- `shuffle = true`: whether to shuffle the training images for each epoche
+- `log = true`: whether to print information about the model's training
+  performance.
+- `logpath`: redirect logging to this file.
+- `modelpath`: file to store the trained model in
+- `record = true`: record the training performance in a `Dict` and return it.
+- `patchsize`: providing an integer for this option causes that the
+  effective training images are patches of this size, generated from the
+  input image during each epoche.
+- `patchmode`: if `patchmode < 1`, create patches by cutting ordered
+  patches from the given input images. If `patchmode >= 0`, create
+  `patchmode` patches by random selection.
+- `at = Array{Float32}`: the arraytyped used for training and evaluating.
+  Currently, this is restricted to `Array{Float32}` for cpu computation or
+  `KnetArray{Float32}` for gpu computation.
+- `kernelsize = 7`: size of the kernel used to construct proximity maps.
+- `peakheight = 100`: height of the kernels used to construct proximity
+  maps.
+- `opt = Adam`: Knet optimizer to be used. All other keyword arguments are
+  passed to the constructor of the optimizer.
+"""
+
 function train!(model :: Model, imgs, lbls; 
-                epochs = 10, opt = Adam, log = true, 
-                logpath = nothing, record = true, 
-                batchsize = 1, shuffle = false, 
-                modelpath = nothing, testset = nothing, 
-                kernelsize = 7, peakheight = 100., 
-                at = Array{Float32}, kwargs...)
+                epochs = 10, 
+                opt = Adam, 
+                log = true, 
+                logpath = nothing, 
+                record = true, 
+                batchsize = 1, 
+                patchsize = nothing, 
+                patchmode = 0,
+                shuffle = false, 
+                modelpath = nothing, 
+                testset = nothing, 
+                kernelsize = 7, 
+                peakheight = 100., 
+                at = nothing, 
+                kwargs...)
 
   # Sanity checks
 
@@ -153,6 +196,10 @@ function train!(model :: Model, imgs, lbls;
   # In practice this means to transfer them to 
   # gpu memory if a gpu based arratype is given.
 
+  if at == nothing
+    at = gpu() >= 0 ? KnetArray{Float32} : Array{Float32}
+  end
+
   w = packweight(weights(model), at = at)
   s = packstate(state(model), at = at)
 
@@ -161,7 +208,18 @@ function train!(model :: Model, imgs, lbls;
 
   optim = optimizers(w, opt; kwargs...)
   test  = (testset != nothing) && (log || record)
-  n     = ceil(Int, length(imgs) / batchsize)
+
+  if patchsize == nothing
+    n = ceil(Int, length(imgs) / batchsize)
+  elseif patchmode > 0
+    n = ceil(Int, length(imgs) * patchmode / batchsize)
+  else
+    # WARNING: This will not work if margins or manual offsets are given to
+    # `ordered_patches`
+    m1 = floor(imgsize(imgs[1])[1] / patchsize)
+    m2 = floor(imgsize(imgs[1])[2] / patchsize)
+    n = ceil(Int, length(imgs) * m1 * m2 / batchsize)
+  end
 
   if record
     rec = Dict{Symbol, Array{Float64}}( 
@@ -199,8 +257,10 @@ function train!(model :: Model, imgs, lbls;
     @printf "#\n"
     @printf "# model      %s\n" typeof(model)
     @printf "# date       %s\n" now()
-    @printf "# patches    %d\n" length(imgs)
-    @printf "# patchsize  %s\n" imgsize(imgs[1])
+    @printf "# images     %d\n" length(imgs)
+    @printf "# imagesize  %s\n" imgsize(imgs[1])
+    @printf "# patchsize  %s\n" patchsize
+    @printf "# patchmode  %s\n" patchmode
     @printf "# batches    %d\n" n
     @printf "# batchsize  %d\n" batchsize
     @printf "# epochs     %d\n" epochs
@@ -224,8 +284,22 @@ function train!(model :: Model, imgs, lbls;
 
     # TODO: make the batch-acquicision process more dynamic!
     # * Allow for pipelines
-    # * Allow for patch-creation
-    batches = makebatches(imgs, lbls, batchsize, shuffle = shuffle)
+
+    if patchsize != nothing && patchmode > 0
+      rp = random_patches.(imgs, lbls, patchmode, 
+                           size = (patchsize, patchsize))
+      timgs, tlbls = vcat(first.(rp)...), vcat(second.(rp)...)
+
+    elseif patchsize != nothing && patchmode <= 0
+      op = ordered_patches.(imgs, lbls,
+                            size = (patchsize, patchsize))
+      timgs, tlbls = vcat(first.(op)...), vcat(second.(op)...)
+
+    else
+      timgs, tlbls = imgs, lbls
+    end
+
+    batches = makebatches(timgs, tlbls, batchsize, shuffle = shuffle)
     packs   = packbatches(batches, at = at, 
                           peakheight = peakheight, 
                           kernelsize = kernelsize) 
@@ -235,6 +309,9 @@ function train!(model :: Model, imgs, lbls;
       @printf "# Epoche  Batch   Loss  Count  MeanAdj   MaxAdj \n"
       @printf "# ----------------------------------------------\n"
     end
+
+    imgsave("image", imgs[1])
+    imgsave("label", GreyscaleImage(proxymap(imgsize(imgs[1])..., lbls[1])))
 
     # Training epoche
 
@@ -250,6 +327,10 @@ function train!(model :: Model, imgs, lbls;
       data, prmaps = packs[j]
       lbl = batches[j][2]
 
+      imgsave("image$j", batches[j][1][1])
+      imgsave("label$j", GreyscaleImage(proxymap(imgsize(batches[j][1][1])..., 
+                                                batches[j][2][1])))
+
       l, lg = lossgrad(w, s, data, prmaps, typeof(model))
       update!(w, lg, optim)
 
@@ -257,6 +338,9 @@ function train!(model :: Model, imgs, lbls;
 
         # Let the model predict labels
 
+        dens = density(w, s, data, typeof(model))
+        @show maximum(dens)
+        @show minimum(dens)
         dlbl = label(w, s, data, typeof(model))
 
         # Evaluate the quality of the prediction
@@ -266,8 +350,8 @@ function train!(model :: Model, imgs, lbls;
         mm, mx = mean(mean, adj), mean(maximum, adj)
 
         if log
-          @printf("  %6d  %5d  %5.1f  %5.3f  %7.2f  %7.2f  %7.0f\n", 
-                  i, j, l, c, mm, mx, sum(x -> sum(abs, x), weights(model)))
+          @printf("  %6d  %5d  %5.1f  %5.3f  %7.2f  %7.2f\n", 
+                  i, j, l, c, mm, mx)
         end
 
         if record

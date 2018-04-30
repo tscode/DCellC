@@ -23,6 +23,9 @@ s = ArgParseSettings()
   "test"
     help = "show an example image and test the model performance on it"
     action = :command
+  "generate"
+    help = "generate a synthetic image with given parameters"
+    action = :command
 end
 
 @add_arg_table s["train"] begin
@@ -134,6 +137,43 @@ end
     default = 0.2
 end
 
+@add_arg_table s["generate"] begin
+  "name"
+    help = "filename of the generated image"
+  "number"
+    help = "number of image files to create"
+    arg_type = Int
+    default = 1
+  "--res", "-r"
+    help = "resolution of the image patches to be tested"
+    arg_type = Int
+    default = 256
+  "--jitter", "-j"
+    help = "randomness of the annotated positions in the label"
+    arg_type = Int
+    default = 0
+  "--cell-number", "-n"
+    help = "range of allowed cell-numbers per patch"
+    arg_type = Tuple{Int, Int}
+    default = (50, 80)
+  "--cell-size", "-a"
+    help = "range of the size of the two main axis of a cell in pixels"
+    arg_type = Tuple{Float64, Float64}
+    default = (3., 15.)
+  "--cell-intensity", "-c"
+    help = "range of the intensity a single cell may have"
+    arg_type = Tuple{Float64, Float64}
+    default = (0.2, 4.0)
+  "--soften", "-S"
+    help = "filtersize of the softening post-processing on the patches"
+    arg_type = Int
+    default = 2
+  "--noise", "-N"
+    help = "magnitude of the applied random noise on the patches"
+    arg_type = Float64
+    default = 0.2
+end
+
 args = parse_args(s)
 
 
@@ -141,8 +181,13 @@ args = parse_args(s)
 # Parsing done. Now load DCellC and execute the program
 
 using Knet
+
 include("../src/DCellC.jl")
 using DCellC
+
+
+# ---------------------------------------------------------------------------- #
+# First mode: Train a network, print the performance, and save it
 
 if args["%COMMAND%"] == "train"
 
@@ -206,6 +251,10 @@ if args["%COMMAND%"] == "train"
          at = at)
 
 
+# ---------------------------------------------------------------------------- #
+# Second mode: Create test image, test a given network on it, 
+# and display the result
+
 elseif args["%COMMAND%"] == "test"
   import ImageView
   using Gtk.ShortNames
@@ -257,5 +306,39 @@ elseif args["%COMMAND%"] == "test"
     wait(c)
   end
 
+
+# ---------------------------------------------------------------------------- #
+# Third mode: Generate synthetic images and save them
+
+elseif args["%COMMAND%"] == "generate"
+
+  args = args["generate"]
+
+  res = args["res"]
+  gen() = synthesize(args["res"], args["res"], args["cell-number"],
+                     jitter = args["jitter"],
+                     cell = SharpEllipticCell(args["cell-size"], args["cell-intensity"]),
+                     pp = [PP.soften(args["soften"]), PP.noise(args["noise"])])
+
+  # Create images
+  number = args["number"]
+  images = [ gen() for i in 1:number ]
+
+  # Create files
+  fname = args["name"]
+  if length(images) == 1
+    lmgsave(fname, images[1])
+  elseif contains(fname, "%n")
+    for i in 1:number
+      name = replace(fname, "%n", (@sprintf "%03d" i))
+      lmgsave(name, images[i])
+    end
+  else
+    bname, ext = splitext(fname) 
+    for i in 1:number
+      name = bname * (@sprintf "%03d" i) * "." * ext
+      lmgsave(name, images[i])
+    end
+  end
 end
 

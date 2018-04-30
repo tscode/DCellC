@@ -1,6 +1,6 @@
 
 # --------------------------------------------------------------------------- #
-# Model interface functions 
+# Labels -- a list of cell position coordinates
 
 struct Label
   data :: Matrix{Int}
@@ -12,14 +12,21 @@ end
 
 Label() = Label(zeros(Int, 2, 0))
 
+# --------------------------------------------------------------------------- #
+# See tuples of images and labels as "labeled Images"
+
+const LabeledGreyscaleImage = Tuple{GreyscaleImage, Label}
+const LabeledRGBImage = Tuple{RGBImage, Label}
+const LabeledImage = Union{LabeledGreyscaleImage, LabeledRGBImage}
+
 
 # --------------------------------------------------------------------------- #
 # Proximity maps
 # Proxymaps are "washed out" 2d arrays with peaks at given label positions
 
 function proxymap(width, height, lbls :: Vector{Label}; 
-                  stddev :: Real = kernelsize/4,
                   kernelsize :: Int = 7, 
+                  stddev :: Real = kernelsize/4,
                   peakheight :: Real = 100)
 
   # Create proximity maps from labels
