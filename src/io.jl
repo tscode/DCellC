@@ -77,7 +77,7 @@ end
 function lmgload(fname :: String, autoext = true)
   basename = splitext(fname)[1]
   if autoext
-    if hasext(fname, fileext(limg[1]))
+    if hasext(fname, fileext(Image))
       return imgload(fname), lblload(basename)
     else
       return imgload(fname), lblload(fname)

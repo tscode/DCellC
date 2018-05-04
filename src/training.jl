@@ -339,8 +339,6 @@ function train!(model :: Model, imgs, lbls;
         # Let the model predict labels
 
         dens = density(w, s, data, typeof(model))
-        @show maximum(dens)
-        @show minimum(dens)
         dlbl = label(w, s, data, typeof(model))
 
         # Evaluate the quality of the prediction
