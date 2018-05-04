@@ -310,9 +310,6 @@ function train!(model :: Model, imgs, lbls;
       @printf "# ----------------------------------------------\n"
     end
 
-    imgsave("image", imgs[1])
-    imgsave("label", GreyscaleImage(proxymap(imgsize(imgs[1])..., lbls[1])))
-
     # Training epoche
 
     for j in 1:n
@@ -327,10 +324,6 @@ function train!(model :: Model, imgs, lbls;
       data, prmaps = packs[j]
       lbl = batches[j][2]
 
-      imgsave("image$j", batches[j][1][1])
-      imgsave("label$j", GreyscaleImage(proxymap(imgsize(batches[j][1][1])..., 
-                                                batches[j][2][1])))
-
       l, lg = lossgrad(w, s, data, prmaps, typeof(model))
       update!(w, lg, optim)
 
@@ -338,9 +331,6 @@ function train!(model :: Model, imgs, lbls;
 
         # Let the model predict labels
 
-        dens = density(w, s, data, typeof(model))
-        @show maximum(dens)
-        @show minimum(dens)
         dlbl = label(w, s, data, typeof(model))
 
         # Evaluate the quality of the prediction
