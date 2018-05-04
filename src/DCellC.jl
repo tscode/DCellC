@@ -38,7 +38,8 @@ export ImageOp, Pipeline, apply,
        NoOp, Flip, Soften, PixelNoise
 
 export Model, FCModel, UNetLike, Multiscale3, FCRNA,
-       weights, state, save, load, density, label
+       weights, state, save, load, density, label,
+       density_patched
 
 export train!, loss
 

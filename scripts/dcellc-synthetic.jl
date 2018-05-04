@@ -230,10 +230,10 @@ if args["%COMMAND%"] == "train"
   end
 
   if args["no-gpu"] || gpu() < 0
-    println("# CPU Mode")
+    println("# CPU mode")
     at = Array{Float32}
   else
-    println("# GPU Mode ($(gpu()))")
+    println("# GPU mode ($(gpu()))")
     at = KnetArray{Float32}
   end
 
