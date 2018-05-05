@@ -56,7 +56,7 @@ function density_patched{I <: Image}(model :: Model{I}, img :: I;
   # Pack the model, i.e. bring it to graphics memory if suitable at is given
   # TODO: These functions are only introduced in the file training.jl.
   # Should be moved?
-  w = packweight(weights(model), at = at)
+  w = packweights(weights(model), at = at)
   s = packstate(state(model), at = at)
 
   # Create patch data

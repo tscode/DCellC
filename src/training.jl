@@ -14,14 +14,18 @@ function packimage(imgs :: Vector{<: Image}; at = Array{Float32})
   return convert(at, pack)
 end
 
-function packweight(w :: Vector{Any}; at = Array{Float32})
-  return map(x -> convert(at, x), w)
+function packweights(w :: Vector{Any}; at = Array{Float32})
+  return Any[ convert(at, x) for x in w ]
+end
+
+function packbnmoments(m; at = Array{Float32})
+  mean = (m.mean != nothing) ? convert(at, m.mean) : nothing
+  var  = (m.var  != nothing) ? convert(at, m.var)  : nothing
+  return bnmoments(momentum = m.momentum, mean = mean, var = var) 
 end
 
 function packstate(s :: Vector{Any}; at = Array{Float32})
-  return s
-  # Cannot convert Knet Moments to gpu values!
-  #return map(x -> convert(at, x), s)
+  return Any[ packbnmoments(x, at = at) for x in s ]
 end
 
 function packproxymap(prmap; at = Array{Float32})
@@ -31,6 +35,10 @@ function packproxymap(prmap; at = Array{Float32})
     return convert(at, prmap)
   end
 end
+
+
+unpackweights(w) = packweights(w, at = Array{Float32})
+unpackstate(s) = packstate(s, at = Array{Float32})
 
 # --------------------------------------------------------------------------- #
 # Check consistency between Array types
@@ -54,7 +62,7 @@ function loss(w, s, imgdata, prmap,
   # is specified, conversion might take place.
 
   if at != nothing
-    w       = packweight(w, at = at)
+    w       = packweights(w, at = at)
     s       = packstate(s,  at = at)
     prmap   = packproxymap(prmap, at = at)
     imgdata = packimage(imgdata, at = at)
@@ -200,7 +208,7 @@ function train!(model :: Model, imgs, lbls;
     at = gpu() >= 0 ? KnetArray{Float32} : Array{Float32}
   end
 
-  w = packweight(weights(model), at = at)
+  w = packweights(weights(model), at = at)
   s = packstate(state(model), at = at)
 
   # Initialize the optimizers and conduct some 
@@ -394,8 +402,8 @@ function train!(model :: Model, imgs, lbls;
 
   # Update the model weights and its state
 
-  weights(model)[:] = convert.(Array{Float32}, w)
-  state(model)[:]   = s
+  weights(model)[:] = unpackweights(w)
+  state(model)[:]   = unpackstate(s)
 
   @printf "\n"
   @printf "# End of training process after %.1f seconds\n" time
@@ -407,9 +415,7 @@ function train!(model :: Model, imgs, lbls;
   end
 
   if modelpath != nothing
-    save(model, modelpath)
-    open(modelpath * ".sd", "w") do file serialize(file, model) end
-    @printf "# Model saved at %s\n" modelpath
+    modelsave(modelpath, model)
   end
 
   return record ? rec : nothing
@@ -498,7 +504,7 @@ function train!(model :: Model, img :: Image, lbl :: Label;
   end
 
   if modelpath != nothing
-    save(model, modelpath)
+    modelsave(model, modelpath)
     @printf "# Model saved at %s\n" modelpath
   end
 

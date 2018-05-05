@@ -143,3 +143,14 @@ imgchannels(::Type{<: RGBImage}) = 3
 
 Base.size(img::Image, args...; kwargs...) = size(img.data, args..., kwargs...)
 
+function imgconvert{T <: Images.Gray}(imgarray :: Array{T})
+  data = permutedims(Images.channelview(imgarray), (2, 3, 1))
+  return GreyscaleImage(reshape(data, size(data)[1:2]...))
+end
+
+function imgconvert{T <: Images.RGB}(imgarray :: Array{T})
+  data = permutedims(Images.channelview(imgarray), (2, 3, 1))
+  return RGBImage(data)
+end
+
+
