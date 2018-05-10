@@ -30,7 +30,7 @@ include("util.jl")
 
 export Image, GreyscaleImage, RGBImage, 
        ordered_patches, random_patches,
-       imgdata, imgsize, imgchannels
+       imgdata, imgsize, imgchannels, imgconvert
 
 export Label, adjacency, proxymap
 
