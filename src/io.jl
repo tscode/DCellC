@@ -52,7 +52,7 @@ end
 
 function lblload(fname :: String, autoext = true)
   fname = joinext(fname, fileext(Label), autoext)
-  return Label(readdlm(fname))
+  return Label(readdlm(fname, Int))
 end
 
 
