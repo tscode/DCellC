@@ -73,13 +73,14 @@ function ordered_patches{I <: Image}(img :: I, lbl;
 
   imgs = I[]
   lbls = Label[]
+  ld = convert(Matrix{Int}, lbl)
 
   for i in ygrid, j in xgrid
     ii = i + size[1] - 1
     jj = j + size[2] - 1
-    sel = (i .<= lbl.data[2,:] .<= ii) .& (j .<= lbl.data[1,:] .<= jj)
+    sel = (i .<= ld[2,:] .<= ii) .& (j .<= ld[1,:] .<= jj)
     push!(imgs, I(img.data[i:ii, j:jj, :]))
-    push!(lbls, Label(lbl.data[:,sel] .- [j-1, i-1]))
+    push!(lbls, Label(ld[:,sel] .- [j-1, i-1]))
   end
 
   data = vcat( (apply.(imgs, lbls, imageop) for i in 1:multitude)... )
@@ -103,14 +104,15 @@ function random_patches{I <: Image}(img :: I, lbl, number;
 
   imgs = I[]
   lbls = Label[]
+  ld = convert(Matrix{Int}, lbl)
 
   for k in 1:number
     i, j = rand(1:n-size[1]), rand(1:m-size[2])
     ii = i + size[1] - 1
     jj = j + size[2] - 1
-    sel = (i .<= lbl.data[2,:] .<= ii) .& (j .<= lbl.data[1,:] .<= jj)
+    sel = (i .<= ld[2,:] .<= ii) .& (j .<= ld[1,:] .<= jj)
     push!(imgs, I(img.data[i:ii, j:jj, :]))
-    push!(lbls, Label(lbl.data[:,sel] .- [j-1, i-1]))
+    push!(lbls, Label(ld[:,sel] .- [j-1, i-1]))
   end
 
   data = vcat( (apply.(imgs, lbls, imageop) for i in 1:multitude)... )

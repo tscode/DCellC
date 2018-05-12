@@ -23,7 +23,7 @@ function imshow( img :: GreyscaleImage, label :: Label = Label(zeros(2,0));
 
   gdict = ImageView.imshow(scale * img.data)
   for i in 1:size(label, 2)
-    ImageView.annotate!(gdict, ImageView.AnnotationPoint(label.data[:, i]..., 
+    ImageView.annotate!(gdict, ImageView.AnnotationPoint(label[i]..., 
                                                          shape='.', size=radius, 
                                                          color=Colors.RGB(color...)))
   end
@@ -41,8 +41,8 @@ function imshow( img :: GreyscaleImage, label;
 
   gdict = ImageView.imshow(scale * img.data)
   for j in 1:length(label)
-    for i in 1:size(label[j], 2)
-      ImageView.annotate!(gdict, ImageView.AnnotationPoint(label[j].data[:, i]..., 
+    for i in 1:length(label[j])
+      ImageView.annotate!(gdict, ImageView.AnnotationPoint(label[j][i]..., 
                                                            shape='.', size=radius, 
                                                            color=Colors.RGB(color[j]...)))
     end

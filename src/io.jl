@@ -47,7 +47,7 @@ fileext(::Type{Label}) = ".dccl"
 
 function lblsave(fname :: String, lbl :: Label, autoext = true)
   fname = joinext(fname, fileext(lbl), autoext)
-  writedlm(fname, lbl.data)
+  writedlm(fname, convert(Matrix{Int}, lbl))
 end
 
 function lblload(fname :: String, autoext = true)

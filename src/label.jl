@@ -3,14 +3,19 @@
 # Labels -- a list of cell position coordinates
 
 struct Label
-  data :: Matrix{Int}
-  function Label(data)
-    @assert (size(data, 1) == 2)
-    new(data)
-  end
+  data :: Vector{Tuple{Int, Int}}
 end
 
-Label() = Label(zeros(Int, 2, 0))
+Label() = Label(Tuple{Int, Int}[])
+
+function convert(::Type{Label}, mat::Matrix{Int})
+  @assert (size(mat, 1) == 2)
+  return Label([(mat[:,i]...) for i in 1:size(mat, 2)])
+end
+
+function convert(::Type{Matrix{Int}}, lab::Label) 
+  return hcat([[coords...] for coords in lab.data]...)
+end
 
 # --------------------------------------------------------------------------- #
 # See tuples of images and labels as "labeled Images"
@@ -37,9 +42,7 @@ function proxymap(width, height, lbls :: Vector{Label};
   # Pixel map
   prmap = zeros(Float32, width, height, 1, n)
   for i in 1:n 
-    label = lbls[i]
-    for j in 1:size(label.data, 2)
-      x, y = label.data[:, j]
+    for (x, y) in lbls[i]
       prmap[y, x, 1, i] = 1.
     end
   end
@@ -68,20 +71,21 @@ end
 # Calculates a list of smallest distances between the spots in two labels
 
 function adjacency(dlbl, tlbl)
-  if isempty(dlbl.data) && isempty(tlbl.data)
+  ddata, tdata = convert.(Matrix{Int}, (dlbl, tlbl))
+  if isempty(ddata) && isempty(tdata)
     return 0.
-  elseif isempty(dlbl.data) || isempty(tlbl.data)
+  elseif isempty(ddata) || isempty(tdata)
     return Inf
   end
 
   n, m = length(tlbl), length(dlbl)
   vals = zeros(n + m)
   for i in 1:n
-    dists = sqrt.(sum(abs2, dlbl.data .- tlbl.data[:,i], 1))[1,:]
+    dists = sqrt.(sum(abs2, ddata .- tdata[:,i], 1))[1,:]
     vals[i] = minimum(dists)
   end
   for i in 1:m
-    dists = sqrt.(sum(abs2, dlbl.data[:,i] .- tlbl.data, 1))[1,:]
+    dists = sqrt.(sum(abs2, ddata[:,i] .- tdata, 1))[1,:]
     vals[n+i] = minimum(dists)
   end
   return vals
@@ -96,6 +100,18 @@ end
 # Convenience functions
 
 Base.size(l :: Label, args...; kwargs...) = size(l.data, args..., kwargs...)
-Base.length(l :: Label, args...; kwargs...) = div(length(l.data, args..., kwargs...), 2)
-Base.getindex(l :: Label, k :: Integer) = l.data[:,k]
+Base.length(l :: Label, args...; kwargs...) = length(l.data, args..., kwargs...)
+Base.getindex(l :: Label, k :: Integer) = l.data[k]
+Base.setindex!(l :: Label, v, k :: Integer) = setindex!(l.data, (v...), k)
+Base.endof(l :: Label) = length(l)
+
+Base.start(l::Label) = start(l.data)
+Base.next(l::Label, state) = next(l.data, state)
+Base.done(l::Label, state) = done(l.data, state)
+Base.eltype(Type{Label}) = Tuple{Int, Int}
+
+Base.push!(l :: Label, coords) = push!(l.data, coords)
+Base.pop!(l :: Label) = pop!(l.data)
+Base.deleteat!(l :: Label, idx) = deleteat!(l.data, idx)
+
 

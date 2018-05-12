@@ -57,7 +57,7 @@ function apply{I <: Image}(img :: I, lbl :: Label, op::Flip)
 
   # Vertical flip
   if rand() <= op.prob[1]
-    l = lbl.data
+    l = convert(Matrix{Int}, lbl)
     img = I(flipdim(img.data, 1))
     dat = [ [l[1,i], size(img, 1) - l[2,i] + 1] for i in 1:n ]
     lbl = Label(hcat(dat...))
@@ -65,7 +65,7 @@ function apply{I <: Image}(img :: I, lbl :: Label, op::Flip)
 
   # Horizontal flip
   if rand() <= op.prob[2]
-    l = lbl.data
+    l = convert(Matrix{Int}, lbl)
     img = I(flipdim(img.data, 2))
     dat = [ [size(img, 2) - l[1,i] + 1, l[2,i]] for i in 1:n ]
     lbl = Label(hcat(dat...))
