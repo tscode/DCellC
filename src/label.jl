@@ -6,16 +6,17 @@ struct Label
   data :: Vector{Tuple{Int, Int}}
 end
 
-Label() = Label(Tuple{Int, Int}[])
-
-function convert(::Type{Label}, mat::Matrix{Int})
+function Base.convert(::Type{Label}, mat::Matrix{Int})
   @assert (size(mat, 1) == 2)
   return Label([(mat[:,i]...) for i in 1:size(mat, 2)])
 end
 
-function convert(::Type{Matrix{Int}}, lab::Label) 
+function Base.convert(::Type{Matrix{Int}}, lab::Label) 
   return hcat([[coords...] for coords in lab.data]...)
 end
+
+Label() = Label(Tuple{Int, Int}[])
+Label(mat::Matrix{Int}) = convert(Label, mat)
 
 # --------------------------------------------------------------------------- #
 # See tuples of images and labels as "labeled Images"
@@ -108,7 +109,7 @@ Base.endof(l :: Label) = length(l)
 Base.start(l::Label) = start(l.data)
 Base.next(l::Label, state) = next(l.data, state)
 Base.done(l::Label, state) = done(l.data, state)
-Base.eltype(Type{Label}) = Tuple{Int, Int}
+Base.eltype(::Type{Label}) = Tuple{Int, Int}
 
 Base.push!(l :: Label, coords) = push!(l.data, coords)
 Base.pop!(l :: Label) = pop!(l.data)

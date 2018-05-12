@@ -74,7 +74,7 @@ function synthesize( width, height, n :: Tuple{Integer, Integer};
                      jitter :: Integer = 0, pp = nothing )
 
   # Initialize image with background and prepare label
-  image = zeros(width, height)
+  image = zeros(Float32, width, height)
 
   n = rand(n[1]:n[2])
   label = zeros(Int, 2, n)
