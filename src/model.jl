@@ -35,7 +35,8 @@ end
 # stich the density-patches together again.
 function density_patched{I <: Image}(model :: Model{I}, img :: I; 
                                      patchsize = 256, overlap = 24,
-                                     at = Array{Float32})
+                                     at = Array{Float32}, 
+                                     callback :: Function = (i, n) -> nothing)
 
   s = (n, m) = imgsize(img)
   d = overlap
@@ -82,6 +83,9 @@ function density_patched{I <: Image}(model :: Model{I}, img :: I;
     ind = sub2ind((k[2], k[1]), j, i)
     data = patchdata[:,:,:,ind:ind]
     densities[i, j] = convert(at, density(w, s, data, typeof(model)))[:,:,1]
+    
+    # Give some feedback about the status via callback
+    callback(ind, prod(k))
   end
 
   # Merge the density patches with smooth interpolation profiles
