@@ -104,29 +104,36 @@ fileext(::Type{<: Model}) = ".dccm"
 function modelsave(fname :: String, 
                    model :: Model, 
                    autoext = true; 
+                   name :: String = ""
                    description :: String = "")
 
   fname = joinext(fname, fileext(model), autoext)
+  name = (name == "") ? splitext(basename(fname))[1] : name
   # Do not use JLD2.@save, since this worked buggy on distributed 
   # file systems. See issue #55 of JLD2.jl. Disadvantage: Not using 
   # nmap probably is much slower, which should however not be a 
   # problem for the relatively small models used in this project 
   JLD2.jldopen(fname, true, true, true, IOStream) do file
     write(file, "model", model)
+    write(file, "name", name)
     write(file, "description", description)
   end
 end
 
 function modelload(fname :: String,
                    autoext = true; 
-                   description :: Bool = false)
+                   name :: Boll = false, 
+                   description :: Bool = false) 
 
   fname = joinext(fname, fileext(Model), autoext)
   descr = description
 
-  JLD2.@load fname model description
-  if descr return model, description
-  else     return model
+  JLD2.@load fname model name description
+
+  if name && descr return model, name, description
+  elseif descr     return model, description
+  elseif name      return model, name
+  else             return model
   end
 end
 
