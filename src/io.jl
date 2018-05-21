@@ -122,7 +122,7 @@ end
 
 function modelload(fname :: String,
                    autoext = true; 
-                   name :: Boll = false, 
+                   name :: Bool = false, 
                    description :: Bool = false) 
 
   fname = joinext(fname, fileext(Model), autoext)
