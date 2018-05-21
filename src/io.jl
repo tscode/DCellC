@@ -104,7 +104,7 @@ fileext(::Type{<: Model}) = ".dccm"
 function modelsave(fname :: String, 
                    model :: Model, 
                    autoext = true; 
-                   name :: String = ""
+                   name :: String = "",
                    description :: String = "")
 
   fname = joinext(fname, fileext(model), autoext)
