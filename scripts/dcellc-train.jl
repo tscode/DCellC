@@ -51,10 +51,10 @@ function args_train(s)
       help = "optimizer used - one of 'adam', 'rmsprop', 'nesterov'"
       arg_type = String
       default = "adam"
-    "model"
+    "modelfile"
       required = true
       arg_type = String
-      help = "DCellC model (.dccm file) to save the model in after training"
+      help = "DCellC model (.dccm) file that the trained model is saved to"
     "images"
       nargs='+'
       required = true
@@ -116,7 +116,7 @@ function cmd_train(args)
 
   train!(model, lmgs, 
          epochs = args["epochs"],
-         modelpath = args["model"],
+         modelpath = args["modelfile"],
          patchmode = args["patch-number"],
          patchsize = args["patch-size"],
          batchsize = args["batch-size"],

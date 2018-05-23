@@ -166,7 +166,7 @@ Train a model `model` using the images `imgs` and labels `lbls`. Alternatively, 
   effective training images are patches of this size, generated from the
   input image during each epoche.
 - `patchmode`: if `patchmode < 1`, create patches by cutting ordered
-  patches from the given input images. If `patchmode >= 0`, create
+  patches from the given input images. If `patchmode > 0`, create
   `patchmode` patches by random selection.
 - `at = Array{Float32}`: the arraytyped used for training and evaluating.
   Currently, this is restricted to `Array{Float32}` for cpu computation or
