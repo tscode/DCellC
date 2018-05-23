@@ -138,4 +138,22 @@ function modelload(fname :: String,
 end
 
 
+# --------------------------------------------------------------------------- #
+# Lessons 
+
+fileext(::Lesson) = ".dcct"
+fileext(::Type{<: Lesson}) = ".dcct"
+
+function lessonsave(fname :: String, lesson :: Lesson, autoext = true)
+  fname = joinext(fname, fileext(lesson), autoext)
+  JLD2.jldopen(fname, true, true, true, IOStream) do file
+    write(file, "lesson", lesson)
+  end
+end
+
+function lessonload(fname :: String, autoext = true)
+  fname = joinext(fname, fileext(Lesson), autoext)
+  JLD2.@load fname lesson
+  return lesson
+end
 

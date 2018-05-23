@@ -22,6 +22,7 @@ include("imageop.jl")
 include("synthetic.jl")
 include("model.jl")
 include("training.jl")
+include("lesson.jl")
 include("io.jl")
 include("util.jl")
 
@@ -30,7 +31,8 @@ include("util.jl")
 
 export Image, GreyscaleImage, RGBImage, 
        ordered_patches, random_patches,
-       imgdata, imgsize, imgchannels, imgconvert
+       imgdata, imgsize, imgchannels, imgconvert, 
+       crop
 
 export Label, adjacency, proxymap
 
@@ -41,7 +43,7 @@ export Model, FCModel, UNetLike, Multiscale3, FCRNA,
        weights, state, save, load, density, label,
        density_patched
 
-export train!, loss
+export train!, train, loss, Lesson, lessonsave, lessonload
 
 # legacy stuff
 export SharpCircleCell, SharpEllipticCell, 

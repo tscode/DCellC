@@ -78,9 +78,13 @@ function ordered_patches{I <: Image}(img :: I, lbl;
   for i in ygrid, j in xgrid
     ii = i + size[1] - 1
     jj = j + size[2] - 1
-    sel = (i .<= ld[2,:] .<= ii) .& (j .<= ld[1,:] .<= jj)
     push!(imgs, I(img.data[i:ii, j:jj, :]))
-    push!(lbls, Label(ld[:,sel] .- [j-1, i-1]))
+    if !isempty(lbl)
+      sel = (i .<= ld[2,:] .<= ii) .& (j .<= ld[1,:] .<= jj)
+      push!(lbls, Label(ld[:,sel] .- [j-1, i-1]))
+    else
+      push!(lbls, Label())
+    end
   end
 
   data = vcat( (apply.(imgs, lbls, imageop) for i in 1:multitude)... )
@@ -110,9 +114,13 @@ function random_patches{I <: Image}(img :: I, lbl, number;
     i, j = rand(1:n-size[1]), rand(1:m-size[2])
     ii = i + size[1] - 1
     jj = j + size[2] - 1
-    sel = (i .<= ld[2,:] .<= ii) .& (j .<= ld[1,:] .<= jj)
     push!(imgs, I(img.data[i:ii, j:jj, :]))
-    push!(lbls, Label(ld[:,sel] .- [j-1, i-1]))
+    if !isempty(lbl)
+      sel = (i .<= ld[2,:] .<= ii) .& (j .<= ld[1,:] .<= jj)
+      push!(lbls, Label(ld[:,sel] .- [j-1, i-1]))
+    else
+      push!(lbls, Label())
+    end
   end
 
   data = vcat( (apply.(imgs, lbls, imageop) for i in 1:multitude)... )
@@ -155,4 +163,11 @@ function imgconvert{T <: Images.RGB}(imgarray :: Array{T})
   return RGBImage(data)
 end
 
+function crop(img :: RGBImage, x :: Int, y :: Int, w :: Int, h :: Int)
+  return RGBImage(imgdata(img)[y:y+h-1,x:x+w-1,:])
+end
+
+function crop(img :: GreyscaleImage, x :: Int, y :: Int, w :: Int, h :: Int)
+  return GreyscaleImage(imgdata(img)[y:y+h-1,x:x+w-1])
+end
 

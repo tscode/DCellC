@@ -8,6 +8,8 @@ struct Pipeline{N}
   ops :: NTuple{N, ImageOp}
 end
 
+Pipeline(op::ImageOp) = Pipeline((op,))
+
 import Base.|>
 |>(op1::ImageOp, op2::ImageOp) = Pipeline((o1, o2))
 |>(pip::Pipeline, op::ImageOp) = Pipeline((pip.ops..., op))

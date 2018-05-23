@@ -198,7 +198,9 @@ function train!(model :: Model, imgs, lbls;
   # Sanity checks
 
   @assert (length(imgs) == length(lbls))
-  @assert all(x -> x == imgsize(imgs[1]), imgsize.(imgs))
+  if patchsize == nothing
+    @assert all(x -> x == imgsize(imgs[1]), imgsize.(imgs))
+  end
 
   # Pack the model weights and state.
   # In practice this means to transfer them to 
@@ -405,8 +407,10 @@ function train!(model :: Model, imgs, lbls;
   weights(model)[:] = unpackweights(w)
   state(model)[:]   = unpackstate(s)
 
-  @printf "\n"
-  @printf "# End of training process after %.1f seconds\n" time
+  if log
+    @printf "\n"
+    @printf "# End of training process after %.1f seconds\n" time
+  end
 
   if logpath != nothing
     # TODO
