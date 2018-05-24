@@ -46,7 +46,7 @@ function Lesson(modelc;      # model or constructor function for a model
                 optimizer    = "adam", # allowed: adam, rmsprop, nesterov
                 lr           = 1e-4,
                 selections   = [],
-                pipeline     = Pipeline(NoOp()),
+                pipeline     = Id(),
                 epochs       = 10,
                 batchsize    = 1,
                 patchsize    = 256,
