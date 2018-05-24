@@ -47,7 +47,9 @@ export Model, FCModel, UNetLike, Multiscale3, FCRNA,
        weights, state, save, load, density, label,
        density_patched
 
-export train!, train, loss, Lesson, lessonsave, lessonload
+export train!, train, loss
+
+export Lesson, Selection, lessonsave, lessonload
 
 # legacy stuff
 export SharpCircleCell, SharpEllipticCell, 

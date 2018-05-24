@@ -213,6 +213,7 @@ Scale(f = 1.1) = StretchV(f) * StretchH(f)
 
 # --------------------------------------------------------------------------- #
 # TODO: Rotation, Shear, Crop...
+# TODO: HSV wiggling for RGB images!
 
 
 
