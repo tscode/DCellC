@@ -71,7 +71,7 @@ end
 
 function synthesize( width, height, n :: Tuple{Integer, Integer}; 
                      cell = SharpCircleCell((5,10)), 
-                     jitter :: Integer = 0, pp = nothing )
+                     jitter :: Integer = 0, imgop = Id() )
 
   # Initialize image with background and prepare label
   image = zeros(Float32, width, height)
@@ -93,50 +93,10 @@ function synthesize( width, height, n :: Tuple{Integer, Integer};
     image[yreg, xreg] += c
   end
 
-  # Apply post-processing steps
-  if pp != nothing
-    if !applicable(start, pp)
-      pp = [ pp ]
-    end
-    for p in pp
-      image = p(image)
-    end
-  end
+  lbl = Label(label)
+  img = GreyscaleImage(image)
 
-  # Return the final image and the corresponding label
-  return GreyscaleImage(image), Label(label)
+  # Apply post-processing steps and return
+  return apply(imgop, img, lbl)
 end
 
-
-# --------------------------------------------------------------------------- #
-# Post-Processing functionality
-
-module PP
-
-  using ImageFiltering
-
-  # Simple Gaussian smoothing
-  function soften(size = 3)
-    return img ->
-      imfilter(img, Kernel.gaussian(size))
-  end
-
-  # Add pixelwise noise to the image
-  function noise(amp = 0.2, f = rand)
-    return img ->
-      img + amp * f(size(img)...)
-  end
-
-
-  # Add background gradients 
-  #=function gradient(min, max; unit = nothing)=#
-    #=return function f(img)=#
-      #=d = sqrt(sum(abs2, (size(img))))=#
-      #=t = rand() * 2pi=#
-      #=unit = (unit == nothing) ? norm(size(img)...) : unit=#
-      #=start = =#
-      #=grad(i, j) = =#
-    #=end=#
-  #=end=#
-
-end

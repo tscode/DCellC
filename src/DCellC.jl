@@ -19,10 +19,12 @@ import JLD2
 include("image.jl")
 include("label.jl")
 include("imageop.jl")
-include("synthetic.jl")
+
 include("model.jl")
 include("training.jl")
 include("lesson.jl")
+
+include("synthetic.jl")
 include("io.jl")
 include("util.jl")
 
@@ -36,8 +38,10 @@ export Image, GreyscaleImage, RGBImage,
 
 export Label, adjacency, proxymap
 
-export ImageOp, Pipeline, apply,
-       NoOp, Flip, Soften, PixelNoise
+export ImageOp, RandomImageOp, Pipeline, 
+       Id, FlipV, FlipH, Jitter, Soften, 
+       PixelNoise, StretchV, StretchH,
+       apply
 
 export Model, FCModel, UNetLike, Multiscale3, FCRNA,
        weights, state, save, load, density, label,

@@ -163,6 +163,10 @@ function imgconvert{T <: Images.RGB}(imgarray :: Array{T})
   return RGBImage(data)
 end
 
+function crop(data :: Matrix{Float32}, x :: Int, y :: Int, w :: Int, h :: Int)
+  return data[y:y+h-1,x:x+w-1]
+end
+
 function crop(img :: RGBImage, x :: Int, y :: Int, w :: Int, h :: Int)
   return RGBImage(imgdata(img)[y:y+h-1,x:x+w-1,:])
 end
@@ -170,4 +174,7 @@ end
 function crop(img :: GreyscaleImage, x :: Int, y :: Int, w :: Int, h :: Int)
   return GreyscaleImage(imgdata(img)[y:y+h-1,x:x+w-1])
 end
+
+Base.similar(img::GreyscaleImage) = GreyscaleImage(zeros(Float32, imsize(img)))
+
 

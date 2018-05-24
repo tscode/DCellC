@@ -12,8 +12,8 @@ second{T, S}(t :: Tuple{T, S}) = t[2]
 # --------------------------------------------------------------------------- #
 # Import external functionality
 
-#import Colors
-#import ImageView
+import Colors
+import ImageView
 
 # --------------------------------------------------------------------------- #
 # Utility function that shows a (greyscale) image as well as labels
@@ -22,9 +22,10 @@ function imshow( img :: GreyscaleImage, label :: Label = Label(zeros(2,0));
                  scale = 1., radius = 2, color=(0.1, 0.7, 0.2) )
 
   gdict = ImageView.imshow(scale * img.data)
-  for i in 1:size(label, 2)
-    ImageView.annotate!(gdict, ImageView.AnnotationPoint(label[i]..., 
-                                                         shape='.', size=radius, 
+  for (x,y) in label
+    ImageView.annotate!(gdict, ImageView.AnnotationPoint(x, y, 
+                                                         shape='.', 
+                                                         size=radius, 
                                                          color=Colors.RGB(color...)))
   end
   return gdict
