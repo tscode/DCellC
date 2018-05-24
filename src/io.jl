@@ -126,14 +126,15 @@ function modelload(fname :: String,
                    description :: Bool = false) 
 
   fname = joinext(fname, fileext(Model), autoext)
-  descr = description
+  returnname = name
+  returndescr = description
 
   JLD2.@load fname model name description
 
-  if name && descr return model, name, description
-  elseif descr     return model, description
-  elseif name      return model, name
-  else             return model
+  if returnname && returndescr return model, name, description
+  elseif returndescr           return model, description
+  elseif returnname            return model, name
+  else                         return model
   end
 end
 
