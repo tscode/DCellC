@@ -23,7 +23,7 @@ mutable struct Lesson
   selections :: Array{Selection}
 
   # Data augmentation
-  pipeline   :: Pipeline
+  imageop   :: ImageOp
 
   # Parameters
   epochs       :: Int
@@ -46,7 +46,7 @@ function Lesson(modelc;      # model or constructor function for a model
                 optimizer    = "adam", # allowed: adam, rmsprop, nesterov
                 lr           = 1e-4,
                 selections   = [],
-                pipeline     = Id(),
+                imageop      = Id(),
                 epochs       = 10,
                 batchsize    = 1,
                 patchsize    = 256,
@@ -55,7 +55,7 @@ function Lesson(modelc;      # model or constructor function for a model
                 kernelheight = 100)
 
     return Lesson(modelc, imgtype, batchnorm, optimizer, 
-                  lr, folder, selections, pipeline, epochs, 
+                  lr, folder, selections, imageop, epochs, 
                   batchsize, patchsize, patchmode,
                   kernelsize, kernelheight)
 end
@@ -95,7 +95,6 @@ function train(lesson :: Lesson; kwargs...)
 
   lmgs = resolvesel.(lesson.selections, lesson.folder)
 
-  # TODO: Pipelines!!
   train!(model, lmgs;
          epochs     = lesson.epochs,
          batchsize  = lesson.batchsize,
@@ -103,6 +102,7 @@ function train(lesson :: Lesson; kwargs...)
          patchmode  = lesson.patchmode,
          kernelsize = lesson.kernelsize,
          peakheight = lesson.kernelheight,
+         imageop    = lesson.imageop,
          lr         = lesson.lr,
          opt        = opt, 
          shuffle    = true, 
