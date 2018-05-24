@@ -48,7 +48,7 @@ function ordered_patches{I <: Image}(img :: I, lbl;
                                      offset = nothing,
                                      margin :: Integer = 0,
                                      shuffle :: Bool = true,
-                                     imageop = NoOp(),
+                                     imageop = Id(),
                                      multitude = 1)
 
   # Note: components of argument size should be divisible by 8,
@@ -87,7 +87,7 @@ function ordered_patches{I <: Image}(img :: I, lbl;
     end
   end
 
-  data = vcat( (apply.(imgs, lbls, imageop) for i in 1:multitude)... )
+  data = vcat( (apply.(imageop, imgs, lbls) for i in 1:multitude)... )
   imgs = [ img for (img, _) in data ]
   lbls = [ lbl for (_, lbl) in data ]
 
@@ -97,7 +97,7 @@ end
 
 function random_patches{I <: Image}(img :: I, lbl, number; 
                                     size = (128, 128), 
-                                    imageop = NoOp(),
+                                    imageop = Id(),
                                     multitude = 1)
 
   # Note: components of argument size should be divisible by 8,
@@ -123,7 +123,7 @@ function random_patches{I <: Image}(img :: I, lbl, number;
     end
   end
 
-  data = vcat( (apply.(imgs, lbls, imageop) for i in 1:multitude)... )
+  data = vcat( (apply.(imageop, imgs, lbls) for i in 1:multitude)... )
   imgs = [ img for (img, _) in data ]
   lbls = [ lbl for (_, lbl) in data ]
 

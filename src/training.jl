@@ -192,6 +192,7 @@ function train!(model :: Model, imgs, lbls;
                 testset = nothing, 
                 kernelsize = 7, 
                 peakheight = 100., 
+                imageop = Id(),
                 at = nothing, 
                 kwargs...)
 
@@ -293,21 +294,23 @@ function train!(model :: Model, imgs, lbls;
     # transfer the batch-data to gpu memory.
 
     # TODO: make the batch-acquicision process more dynamic!
-    # * Allow for pipelines
 
     if patchsize != nothing && patchmode > 0
-      rp = random_patches.(imgs, lbls, patchmode, 
-                           size = (patchsize, patchsize))
-      timgs, tlbls = vcat(first.(rp)...), vcat(second.(rp)...)
+      patches = random_patches.(imgs, lbls, patchmode, 
+                                imageop = imageop,
+                                size = (patchsize, patchsize))
 
     elseif patchsize != nothing && patchmode <= 0
-      op = ordered_patches.(imgs, lbls,
-                            size = (patchsize, patchsize))
-      timgs, tlbls = vcat(first.(op)...), vcat(second.(op)...)
+      patches = ordered_patches.(imgs, lbls,
+                                 imageop = imageop,
+                                 size = (patchsize, patchsize))
 
     else
-      timgs, tlbls = imgs, lbls
+      patches = apply.(imageop, imgs, lbls)
     end
+
+
+    timgs, tlbls = vcat(first.(patches)...), vcat(second.(patches)...)
 
     batches = makebatches(timgs, tlbls, batchsize, shuffle = shuffle)
     packs   = packbatches(batches, at = at, 

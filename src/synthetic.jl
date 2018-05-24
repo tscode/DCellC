@@ -70,8 +70,7 @@ end
 # Function that creates synthesized labeled images for provided Cell types
 
 function synthesize( width, height, n :: Tuple{Integer, Integer}; 
-                     cell = SharpCircleCell((5,10)), 
-                     jitter :: Integer = 0, imgop = Id() )
+                     cell = SharpCircleCell((5,10)), op = Id() )
 
   # Initialize image with background and prepare label
   image = zeros(Float32, width, height)
@@ -86,8 +85,7 @@ function synthesize( width, height, n :: Tuple{Integer, Integer};
     lx = floor(Int, s[1] / 2) + 1
     ly = floor(Int, s[2] / 2) + 1
     x, y = rand(lx:height-lx), rand(ly:width-ly)
-    dx, dy = rand(-jitter:jitter, 2)
-    label[:, i] = [x + dx, y + dy]
+    label[:, i] = [x, y]
     xreg = x-lx+1 : x+lx-1
     yreg = y-ly+1 : y+ly-1
     image[yreg, xreg] += c
@@ -97,6 +95,8 @@ function synthesize( width, height, n :: Tuple{Integer, Integer};
   img = GreyscaleImage(image)
 
   # Apply post-processing steps and return
-  return apply(imgop, img, lbl)
+  return apply(op, img, lbl)
 end
+
+synthesize( w, h, n :: Integer; kwargs...) = synthesize(w, h, (n, n); kwargs...)
 
