@@ -38,11 +38,11 @@ end
 
 RandomImageOp(o :: ImageOp, f :: Real) = RandomImageOp((o, Id()), (f, 1))
 
-function apply(o :: RandomImageOp, args...)
+function apply(o :: RandomImageOp, img :: Image, lbl :: Label)
   r = rand()
   p = collect(o.freqs ./ sum(o.freqs))
   k = findfirst(x -> x > r, cumsum(p))
-  apply(o.options[k], args...)
+  apply(o.options[k], img, lbl)
 end
 
 import Base.+
@@ -62,11 +62,11 @@ struct Pipeline{N} <: ImageOp
   ops   :: NTuple{N, ImageOp}
 end
 
-function apply(pip :: Pipeline, args...)
+function apply(pip :: Pipeline, img :: Image, lbl :: Label)
   for op in pip.ops
-    args = apply(op, args...)
+    img, lbl = apply(op, img, lbl)
   end
-  return args
+  return img, lbl
 end
 
 import Base.*
@@ -155,10 +155,12 @@ end
 
 struct StretchV <: ImageOp
   f :: Float64
+  StretchV(f) = new(clamp(f, 1, Inf))
 end
 
 struct StretchH <: ImageOp
   f :: Float64
+  StretchH(f) = new(clamp(f, 1, Inf))
 end
 
 StretchV() = StretchV(1.1)
