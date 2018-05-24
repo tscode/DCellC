@@ -66,5 +66,13 @@ rgbimage2 = imgload(rgbname)
 
 println("Test image.jl: Saving and loading images works")
 
+gsimagec = crop(gsimage, 20, 30, 100, 150)
+rgbimagec = crop(rgbimage, 20, 30, 100, 150)
+
+@assert imgsize(gsimagec) == (150, 100)
+@assert imgsize(rgbimagec) == (150, 100)
+
+println("Test image.jl: Cropping images works")
+
 
 println("Test image.jl completed")

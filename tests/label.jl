@@ -29,4 +29,8 @@ label4 = lblload(lname)
 @assert label4.data == label3.data
 println("Test label.jl: Writing and loading labels works")
 
+lblc = crop(label2, 450, 25, 75, 10)
+@assert lblc.data[1] == (51, 9)
+println("Test label.jl: Cropping labels works")
+
 println("Test label.jl completed")

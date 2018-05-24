@@ -166,7 +166,7 @@ Train a model `model` using the images `imgs` and labels `lbls`. Alternatively, 
   effective training images are patches of this size, generated from the
   input image during each epoche.
 - `patchmode`: if `patchmode < 1`, create patches by cutting ordered
-  patches from the given input images. If `patchmode >= 0`, create
+  patches from the given input images. If `patchmode > 0`, create
   `patchmode` patches by random selection.
 - `at = Array{Float32}`: the arraytyped used for training and evaluating.
   Currently, this is restricted to `Array{Float32}` for cpu computation or
@@ -192,13 +192,16 @@ function train!(model :: Model, imgs, lbls;
                 testset = nothing, 
                 kernelsize = 7, 
                 peakheight = 100., 
+                imageop = Id(),
                 at = nothing, 
                 kwargs...)
 
   # Sanity checks
 
   @assert (length(imgs) == length(lbls))
-  @assert all(x -> x == imgsize(imgs[1]), imgsize.(imgs))
+  if patchsize == nothing
+    @assert all(x -> x == imgsize(imgs[1]), imgsize.(imgs))
+  end
 
   # Pack the model weights and state.
   # In practice this means to transfer them to 
@@ -291,21 +294,23 @@ function train!(model :: Model, imgs, lbls;
     # transfer the batch-data to gpu memory.
 
     # TODO: make the batch-acquicision process more dynamic!
-    # * Allow for pipelines
 
     if patchsize != nothing && patchmode > 0
-      rp = random_patches.(imgs, lbls, patchmode, 
-                           size = (patchsize, patchsize))
-      timgs, tlbls = vcat(first.(rp)...), vcat(second.(rp)...)
+      patches = random_patches.(imgs, lbls, patchmode, 
+                                imageop = imageop,
+                                size = (patchsize, patchsize))
 
     elseif patchsize != nothing && patchmode <= 0
-      op = ordered_patches.(imgs, lbls,
-                            size = (patchsize, patchsize))
-      timgs, tlbls = vcat(first.(op)...), vcat(second.(op)...)
+      patches = ordered_patches.(imgs, lbls,
+                                 imageop = imageop,
+                                 size = (patchsize, patchsize))
 
     else
-      timgs, tlbls = imgs, lbls
+      patches = apply.(imageop, imgs, lbls)
     end
+
+
+    timgs, tlbls = vcat(first.(patches)...), vcat(second.(patches)...)
 
     batches = makebatches(timgs, tlbls, batchsize, shuffle = shuffle)
     packs   = packbatches(batches, at = at, 
@@ -405,8 +410,10 @@ function train!(model :: Model, imgs, lbls;
   weights(model)[:] = unpackweights(w)
   state(model)[:]   = unpackstate(s)
 
-  @printf "\n"
-  @printf "# End of training process after %.1f seconds\n" time
+  if log
+    @printf "\n"
+    @printf "# End of training process after %.1f seconds\n" time
+  end
 
   if logpath != nothing
     # TODO

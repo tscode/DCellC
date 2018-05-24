@@ -11,12 +11,12 @@ function Base.convert(::Type{Label}, mat::Matrix{Int})
   return Label([(mat[:,i]...) for i in 1:size(mat, 2)])
 end
 
-function Base.convert(::Type{Matrix{Int}}, lab::Label) 
+function Base.convert(::Type{Matrix{Int}}, lab::Label) 
   return hcat([[coords...] for coords in lab.data]...)
 end
 
 Label() = Label(Tuple{Int, Int}[])
-Label(mat::Matrix{Int}) = convert(Label, mat)
+Label(mat::Matrix{Int}) = convert(Label, mat)
 
 # --------------------------------------------------------------------------- #
 # See tuples of images and labels as "labeled Images"
@@ -72,7 +72,7 @@ end
 # Calculates a list of smallest distances between the spots in two labels
 
 function adjacency(dlbl, tlbl)
-  ddata, tdata = convert.(Matrix{Int}, (dlbl, tlbl))
+  ddata, tdata = convert.(Matrix{Int}, (dlbl, tlbl))
   if isempty(ddata) && isempty(tdata)
     return 0.
   elseif isempty(ddata) || isempty(tdata)
@@ -103,16 +103,26 @@ end
 Base.size(l :: Label, args...; kwargs...) = size(l.data, args..., kwargs...)
 Base.length(l :: Label, args...; kwargs...) = length(l.data, args..., kwargs...)
 Base.getindex(l :: Label, k :: Integer) = l.data[k]
-Base.setindex!(l :: Label, v, k :: Integer) = setindex!(l.data, (v...), k)
-Base.endof(l :: Label) = length(l)
+Base.setindex!(l :: Label, v, k :: Integer) = setindex!(l.data, (v...), k)
+Base.endof(l :: Label) = length(l)
 
-Base.start(l::Label) = start(l.data)
-Base.next(l::Label, state) = next(l.data, state)
-Base.done(l::Label, state) = done(l.data, state)
-Base.eltype(::Type{Label}) = Tuple{Int, Int}
+Base.start(l::Label) = start(l.data)
+Base.next(l::Label, state) = next(l.data, state)
+Base.done(l::Label, state) = done(l.data, state)
+Base.eltype(::Type{Label}) = Tuple{Int, Int}
 
 Base.push!(l :: Label, coords) = push!(l.data, coords)
-Base.pop!(l :: Label) = pop!(l.data)
-Base.deleteat!(l :: Label, idx) = deleteat!(l.data, idx)
+Base.pop!(l :: Label) = pop!(l.data)
+Base.deleteat!(l :: Label, idx) = deleteat!(l.data, idx)
 
+Base.isempty(l :: Label) = isempty(l.data)
+
+
+function crop(lbl :: Label, x :: Int, y :: Int, w :: Int, h :: Int)
+  o = (x-1, y-1)
+  data = [z .- o for z in lbl.data if x <= z[1] < x+w && y <= z[2] < y+h]
+  return Label(data)
+end
+
+crop(lmg :: LabeledImage, x, y, w, h) = crop.(lmg, x, y, w, h)
 
