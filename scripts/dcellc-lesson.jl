@@ -81,7 +81,7 @@ function cmd_lesson(args)
     lesson.patchmode = parse(Int, args["patch-mode"])
   end
   if args["patch-size"] != -1
-    lesson.patchsize = args["patch-mode"]
+    lesson.patchsize = args["patch-size"]
   end
   if args["batch-size"] != -1
     lesson.batchsize = args["batch-mode"]
