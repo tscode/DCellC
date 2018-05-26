@@ -44,6 +44,10 @@ function args_lesson(s)
       help = "height of the peaks in the proximity map"
       arg_type = Float64
       default = -1.
+    "--imageop", "-I"
+      help = "image operation to be performed on the patches"
+      arg_type = String
+      default = ""
     "--no-gpu"
       help = "prevent usage of gpu acceleration even if gpu support is detected"
       action = :store_true
@@ -91,6 +95,10 @@ function cmd_lesson(args)
   if args["proximity-kernel-height"] > 0
     lesson.kernelheight = Bool(args["proximity-kernel-height"])
   end
+  if args["imageop"] != ""
+    lesson.imageop = eval(parse(args["imageop"]))
+  end
+
 
   if args["no-gpu"] || gpu() < 0
     println("# CPU mode")
