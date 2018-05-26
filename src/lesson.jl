@@ -2,10 +2,10 @@
 # --------------------------------------------------------------------------- #
 # Lessons, aka job descriptions for training processes
 
-const Region = Tuple{Int, Int, Int, Int}
+const Region      = NTuple{4, Int}
 const ImageOrFile = Union{Image, String}
 const LabelOrFile = Union{Label, String}
-const Selection = Tuple{ImageOrFile, LabelOrFile, Region}
+const Selection   = Tuple{ImageOrFile, LabelOrFile, Region}
 
 
 # Remark: Images and labels can either be given as data or as path. 
@@ -19,8 +19,8 @@ mutable struct Lesson
 
   # Model
   model
-  imgtype    :: DataType
-  batchnorm  :: Bool
+  imgtype   :: DataType
+  batchnorm :: Bool
 
   # Algorithm
   optimizer :: String
@@ -31,7 +31,7 @@ mutable struct Lesson
   selections :: Array{Selection}
 
   # Data augmentation
-  imageop   :: ImageOp
+  imageop :: ImageOp
 
   # Parameters
   epochs       :: Int

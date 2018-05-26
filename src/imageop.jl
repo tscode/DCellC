@@ -208,13 +208,40 @@ function apply{I <: Image}(o :: StretchH, img :: I, lbl :: Label)
 end
 
 
-Scale(f = 1.1) = StretchV(f) * StretchH(f)
+Stretch(f = 1.1) = StretchV(f) * StretchH(f)
 
+
+# --------------------------------------------------------------------------- #
+# Gamma scaling
+
+struct Gamma <: ImageOp
+  gamma :: Float64
+end
+
+function apply{I <: Image}(o :: Gamma, img :: I, lbl :: Label)
+  return I(imgdata(data).^(1/o.gamma)), lbl
+end
+
+# --------------------------------------------------------------------------- #
+# Background offset
+
+struct Offset <: ImageOp
+  c :: NTuple{3, Float64}
+end
+
+Offset(c :: Float64) = Offset((c,c,c))
+
+function apply(o :: Offset, img :: GreyscaleImage, lbl :: Label)
+  return I(imgdata(data) + mean(o.c)), lbl
+end
+
+function apply(o :: Offset, img :: RGBImage, lbl :: Label)
+  return I(imgdata(data) .+ reshape([o.c...], (1,1,3))), lbl
+end
 
 # --------------------------------------------------------------------------- #
 # TODO: Rotation, Shear, Crop...
 # TODO: HSV wiggling for RGB images!
-
 
 
 
