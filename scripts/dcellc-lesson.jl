@@ -78,7 +78,7 @@ function cmd_lesson(args)
     lesson.lr = args["learning-rate"]
   end
   if args["patch-mode"] != nothing
-    lesson.patchmode = args["patch-mode"]
+    lesson.patchmode = parse(Int, args["patch-mode"])
   end
   if args["patch-size"] != -1
     lesson.patchsize = args["patch-mode"]
