@@ -201,7 +201,7 @@ abstract type FCModel{I, BN} <: Model{I} end
 
 weights(m :: FCModel) = m.weights
 state(m :: FCModel) = m.bnmoments
-batchnorm{I, BN}(:: FCModel{I, BN}) = BN
+hasbatchnorm{I, BN}(:: FCModel{I, BN}) = BN
 
 
 # Different architectures of this model class

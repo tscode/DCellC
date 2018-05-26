@@ -7,6 +7,14 @@ const ImageOrFile = Union{Image, String}
 const LabelOrFile = Union{Label, String}
 const Selection = Tuple{ImageOrFile, LabelOrFile, Region}
 
+
+# Remark: Images and labels can either be given as data or as path. 
+# The selection region is *only* applied for data that is loaded via 
+# a path. So if an image or a label is given as data, the selection 
+# region is therefore ignored!
+# In other words: If data is given, it is expected that the data
+# was created with crop(data, region...)
+
 mutable struct Lesson
 
   # Model
@@ -65,14 +73,22 @@ end
 # Training with lessons
 
 function resolvesel(s, folder)
-  img, lbl, sel = s
+  img, lbl, region = s
   if typeof(img) == String
-    img = imgload(joinpath(folder, img))
+    img = crop(imgload(joinpath(folder, img)), region...)
+  else
+    # If data is given, expect that it was created by calling 
+    # `crop` on the full image
+    @assert imgsize(img) == region[4:-1:3]
   end
   if typeof(lbl) == String
-    lbl = lblload(joinpath(folder, img))
+    lbl = crop(lblload(joinpath(folder, img)), region...)
+  else
+    # If data is given, expect that it was created by calling 
+    # `crop` on the full label
+    @assert length(lbl) == length(crop(lbl, 1, 1, region[3:4]...))
   end
-  return crop((img, lbl), sel...)
+  return (img, lbl)
 end
 
 function train(lesson :: Lesson; kwargs...)

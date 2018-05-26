@@ -26,6 +26,11 @@ struct RGBImage <: Image
   RGBImage(data) = new(autoscale(convert(Array{Float32}, data)))
 end
 
+function greyscale(img :: RGBImage)
+  # Using rec 601 luma standard
+  data = 0.299data[:,:,1] + 0.587data[:,:,2] + 0.114data[:,:,3]
+  return GreyscaleImage(data)
+end
 
 # --------------------------------------------------------------------------- #
 # Create datasets from high-res images

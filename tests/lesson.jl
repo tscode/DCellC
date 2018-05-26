@@ -7,8 +7,14 @@ using DCellC
 
 lmgs = [ synthesize(512, 512, (300, 500)) for i in 1:3 ]
 
-sel() = (rand(1:50), rand(1:50), rand(260:400), rand(260:400))
-selections = [(lmg..., sel()) for lmg in lmgs] 
+region() = (rand(1:50), rand(1:50), rand(260:400), rand(260:400))
+selections = Selection[] 
+
+for lmg in lmgs
+  r = region()
+  lmg = crop(lmg, r...)
+  push!(selections, (lmg..., r))
+end
 
 lesson1 = Lesson(FCRNA, 
                  imgtype = GreyscaleImage,
