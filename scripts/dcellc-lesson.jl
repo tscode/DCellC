@@ -90,10 +90,10 @@ function cmd_lesson(args)
     lesson.batchnorm = Bool(args["batch-normalization"])
   end
   if args["proximity-kernel-size"] != -1
-    lesson.kernelsize = Bool(args["proximity-kernel-size"])
+    lesson.kernelsize = args["proximity-kernel-size"]
   end
   if args["proximity-kernel-height"] > 0
-    lesson.kernelheight = Bool(args["proximity-kernel-height"])
+    lesson.kernelheight = args["proximity-kernel-height"]
   end
   if args["imageop"] != ""
     lesson.imageop = eval(parse(args["imageop"]))
