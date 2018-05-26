@@ -28,7 +28,7 @@ end
 
 function greyscale(img :: RGBImage)
   # Using rec 601 luma standard
-  data = 0.299data[:,:,1] + 0.587data[:,:,2] + 0.114data[:,:,3]
+  data = 0.299img.data[:,:,1] + 0.587img.data[:,:,2] + 0.114img.data[:,:,3]
   return GreyscaleImage(data)
 end
 
