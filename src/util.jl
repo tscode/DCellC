@@ -12,8 +12,8 @@ second{T, S}(t :: Tuple{T, S}) = t[2]
 # --------------------------------------------------------------------------- #
 # Import external functionality
 
-import Colors
-import ImageView
+#import Colors
+#import ImageView
 
 # --------------------------------------------------------------------------- #
 # Utility function that shows a (greyscale) image as well as labels
