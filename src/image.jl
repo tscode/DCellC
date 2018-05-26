@@ -145,6 +145,7 @@ end
 
 imgdata(img :: Image) = img.data
 imgsize(a) = size(a)[1:2]
+imgtype{I<:Image}(a::I) = I
 
 imgchannels(::GreyscaleImage) = 1
 imgchannels(::RGBImage) = 3

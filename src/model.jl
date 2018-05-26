@@ -4,6 +4,11 @@
 
 abstract type Model{I <: Image} end
 
+# --------------------------------------------------------------------------- #
+# Get the image type that the model is constructed for
+
+imgtype{I <: Image}(:: Model{I}) = I
+
 
 # --------------------------------------------------------------------------- #
 # Reference to the variables of a model trained by backpropagation
@@ -196,8 +201,11 @@ abstract type FCModel{I, BN} <: Model{I} end
 
 weights(m :: FCModel) = m.weights
 state(m :: FCModel) = m.bnmoments
+batchnorm{I, BN}(FCModel{I, BN}) = BN
+
 
 # Different architectures of this model class
+
 include("models/unetlike.jl")
 include("models/multiscale3.jl")
 include("models/fcrna.jl")

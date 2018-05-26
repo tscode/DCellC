@@ -34,7 +34,7 @@ include("util.jl")
 export Image, GreyscaleImage, RGBImage, 
        ordered_patches, random_patches,
        imgdata, imgsize, imgchannels, imgconvert, 
-       crop
+       imgtype, crop
 
 export Label, adjacency, proxymap
 
@@ -45,7 +45,7 @@ export ImageOp, RandomImageOp, Pipeline,
 
 export Model, FCModel, UNetLike, Multiscale3, FCRNA,
        weights, state, save, load, density, label,
-       density_patched
+       density_patched, batchnorm 
 
 export train!, train, loss
 
