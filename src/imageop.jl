@@ -114,7 +114,7 @@ Jitter() = Jitter(3)
 
 function apply{I <: Image}(o :: Jitter, img :: I, lbl :: Label)
   lbl = Label([c .+ (rand(-o.d:o.d, 2)...) for c in lbl])
-  return img, lbl
+  return img, crop(lbl, 1, 1, imsize(img)...)
 end
 
 # --------------------------------------------------------------------------- #
