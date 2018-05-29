@@ -35,7 +35,7 @@ mutable struct Lesson
 
   # Parameters
   epochs       :: Int
-  batchsize    :: Bool 
+  batchsize    :: Int
   patchsize    :: Int
   patchmode    :: Int
   kernelsize   :: Int
