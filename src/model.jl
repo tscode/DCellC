@@ -82,11 +82,16 @@ function density_patched{I <: Image}(model :: Model{I}, img :: I;
   # Load the patch data to gpu if suitable at is given
   pd = convert(at, patchdata)
 
+  # Since Knet does not yet support slicing in 4-d arrays, convert pd to a 2d
+  # array for slicing
+  s = size(pd)
+  pd = reshape(pd, (prod(s[1:end-1]), s[end]))
+
   # Bring the density patches in rectangular layout
   densities = Array{Array{Float32, 2}}(k...)
   for i in 1:k[1], j in 1:k[2]
     ind = sub2ind((k[2], k[1]), j, i)
-    data = pd[:,:,:,ind:ind]
+    data = reshape(pd[:, ind:ind], (s[1:end-1]..., 1))
     densities[i, j] = convert(at, density(w, s, data, typeof(model)))[:,:,1]
     
     # Give some feedback about the status via callback
