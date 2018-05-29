@@ -7,6 +7,14 @@ function args_apply(s)
     "--density", "-d"
       help = "should density images be generated?"
       action = :store_true
+    "--density-postfix"
+      help = "postfix added to saved density images"
+      arg_type = String
+      default = "-dens"
+    "--density-prefix"
+      help = "prefix added to saved density images"
+      arg_type = String
+      default = ""
     "--no-gpu", "-g"
       help = "prevent usage of gpu even if support is detected"
       action = :store_true
@@ -49,7 +57,13 @@ function cmd_apply(args)
   model = modelload(args["model"])
 
   # check if gpu support should be disabled
-  at = args["no-gpu"] ? Array{Float32} : nothing
+  if args["no-gpu"] || gpu() < 0
+    if !args["quiet"] println("# CPU mode") end
+    at = Array{Float32}
+  else
+    if !args["quiet"] println("# GPU mode") end
+    at = KnetArray{Float32}
+  end
 
   # iterate through all images
   for imgfile in args["images"]
@@ -80,7 +94,9 @@ function cmd_apply(args)
 
     # write a density image if so desired
     if args["density"]
-      lblsave(splitext(imgfile)[1]*"-dens.tif", GreyscaleImage(dens))
+      base = splitext(imgfile)[1]
+      dname = args["density-prefix"] * base * args["density-postfix"]
+      imgsave(dname, GreyscaleImage(dens))
     end
   end
 end

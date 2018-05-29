@@ -108,7 +108,7 @@ function modelsave(fname :: String,
                    description :: String = "")
 
   fname = joinext(fname, fileext(model), autoext)
-  name = (name == "") ? splitext(basename(fname))[1] : name
+  name = (name == "") ? splitext(basename(fname))[1] : name
   # Do not use JLD2.@save, since this worked buggy on distributed 
   # file systems. See issue #55 of JLD2.jl. Disadvantage: Not using 
   # nmap probably is much slower, which should however not be a 
@@ -131,7 +131,7 @@ function modelload(fname :: String,
 
   JLD2.@load fname model name description
 
-  if returnname && returndescr return model, name, description
+  if returnname && returndescr return model, name, description
   elseif returndescr           return model, description
   elseif returnname            return model, name
   else                         return model
@@ -145,7 +145,7 @@ end
 fileext(::Lesson) = ".dcct"
 fileext(::Type{<: Lesson}) = ".dcct"
 
-function lessonsave(fname :: String, lesson :: Lesson, autoext = true)
+function lessonsave(fname :: String, lesson :: Lesson, autoext = true)
   fname = joinext(fname, fileext(lesson), autoext)
   JLD2.jldopen(fname, true, true, true, IOStream) do file
     write(file, "lesson", lesson)
@@ -157,4 +157,5 @@ function lessonload(fname :: String, autoext = true)
   JLD2.@load fname lesson
   return lesson
 end
+
 
