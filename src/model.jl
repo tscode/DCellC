@@ -86,7 +86,7 @@ function density_patched{I <: Image}(model :: Model{I}, img :: I;
   densities = Array{Array{Float32, 2}}(k...)
   for i in 1:k[1], j in 1:k[2]
     ind = sub2ind((k[2], k[1]), j, i)
-    data = patchdata[:,:,:,ind:ind]
+    data = pd[:,:,:,ind:ind]
     densities[i, j] = convert(at, density(w, s, data, typeof(model)))[:,:,1]
     
     # Give some feedback about the status via callback
