@@ -12,7 +12,8 @@ ops = [ Id(),
         Jitter(),
         PixelNoise(0.1),
         StretchV(1.1),
-        StretchH(1.5)
+        StretchH(1.5),
+        parse(ImageOp, "(Soften(1), 0.5) * (Jitter(2), 1)")
       ]
 
 println("Test imageop.jl: Creation of base image operations works")

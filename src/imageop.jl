@@ -84,6 +84,13 @@ end
 
 
 # --------------------------------------------------------------------------- #
+# Parsing Image Operations
+
+function Base.parse(::Type{ImageOp}, s::String)
+  return eval(parse(s)) 
+end
+
+# --------------------------------------------------------------------------- #
 # Flips along vertical and horizontal axis
 
 struct FlipV <: ImageOp end
@@ -114,7 +121,7 @@ Jitter() = Jitter(3)
 
 function apply{I <: Image}(o :: Jitter, img :: I, lbl :: Label)
   lbl = Label([c .+ (rand(-o.d:o.d, 2)...) for c in lbl])
-  return img, crop(lbl, 1, 1, imsize(img)...)
+  return img, crop(lbl, 1, 1, imgsize(img)...)
 end
 
 # --------------------------------------------------------------------------- #
