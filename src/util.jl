@@ -1,8 +1,8 @@
 
 
 function autoscale{R <: Real}( img :: Array{R} )
-  m = minimum(img)
-  d = maximum(img) - m
+  m = min(minimum(img), 0)
+  d = max(maximum(img), 1) - m
   return clamp.((img - m) / d, 0, 1)
 end
 
