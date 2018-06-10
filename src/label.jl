@@ -114,6 +114,7 @@ Base.eltype(::Type{Label}) = Tuple{Int, Int}
 Base.push!(l :: Label, coords) = push!(l.data, coords)
 Base.pop!(l :: Label) = pop!(l.data)
 Base.deleteat!(l :: Label, idx) = deleteat!(l.data, idx)
+Base.join(l1 :: Label, l2 :: Label) = Label([l1.data; l2.data])
 
 Base.isempty(l :: Label) = isempty(l.data)
 

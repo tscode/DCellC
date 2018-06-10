@@ -50,3 +50,54 @@ function imshow( img :: GreyscaleImage, label;
   end
   return gdict
 end
+
+
+# --------------------------------------------------------------------------- #
+# Merging algorithms for labels
+
+# adapted from 
+# https://stackoverflow.com/questions/19375675/simple-way-of-fusing-a-few-close-points
+function declutter(lbl :: Label, dist :: Real)
+  if dist <= 0
+    return lbl
+  end
+
+  data = Tuple{Float64, Float64}[]
+  n = length(lbl)
+  merged = zeros(Bool, n)
+  for i in 1:n
+    if !merged[i]
+      count = 1
+      x, y = lbl[i]
+      for j in (i+1):n
+        v, w = lbl[j]
+        if !merged[j] && (x-v)^2 + (y-w)^2 <= dist^2
+          x += v
+          y += w
+          count += 1
+          merged[j] = true
+        end
+      end
+      merged[i] = true
+      push!(data, (x / count, y / count))
+    end
+  end
+  return Label(data)
+end
+
+
+function merge(lbl :: Label, lbl2 :: Label, dist :: Real)
+  if dist <= 0
+    return join(lbl, lbl2)
+  end
+
+  data = copy(lbl2.data)
+  for cm in lbl
+    filter!(data) do ca
+      norm([(cm .- ca)...]) > dist
+    end
+  end
+  return join(lbl, Label(data))
+end
+
+
