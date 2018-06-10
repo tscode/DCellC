@@ -62,7 +62,7 @@ function declutter(lbl :: Label, dist :: Real)
     return lbl
   end
 
-  data = Tuple{Float64, Float64}[]
+  data = Tuple{Int, Int}[]
   n = length(lbl)
   merged = zeros(Bool, n)
   for i in 1:n
@@ -79,7 +79,7 @@ function declutter(lbl :: Label, dist :: Real)
         end
       end
       merged[i] = true
-      push!(data, (x / count, y / count))
+      push!(data, round.(Int, (x / count, y / count)))
     end
   end
   return Label(data)
