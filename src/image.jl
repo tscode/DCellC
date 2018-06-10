@@ -18,6 +18,7 @@ function GreyscaleImage(data :: Array{Float32, 3})
   GreyscaleImage(reshape(data, size(data)[1:2]))
 end
 
+
 # --------------------------------------------------------------------------- #
 # RGB Images
 

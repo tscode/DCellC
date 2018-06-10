@@ -53,9 +53,11 @@ export Lesson, Selection, lessonsave, lessonload
 
 # legacy stuff
 export SharpCircleCell, SharpEllipticCell, 
-       synthesize, PP
+       synthesize
 
 export fileext, imgsave, imgload, lblsave, lblload,
        lmgsave, lmgload, modelsave, modelload
+
+export declutter, merge
 
 end # DCellC
