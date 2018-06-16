@@ -32,17 +32,19 @@ end
 function init_weights{I <: Image}(::Type{UNetLike{I, false}}, 
                                   wr :: Function = wr, 
                                   wu :: Function = wu; 
+                                  potency :: Integer = 6;
                                   seed :: Integer = rand(1:10000))
 
   Knet.setseed(seed)
   c = imgchannels(I)
+  s = 2^potency
 
   return Any[
-    wr(c, 64),   wr(64, 64),  wr(64, 64), wr(64, 64), 
-    wr(64, 64),  wr(64, 64),  wr(64, 64), wr(64, 64),
-    wu(64, 64),  wr(128, 64), wr(64, 64), wu(64, 64),
-    wr(128, 64), wr(64, 64),  wu(64, 64), wr(128, 64),
-    wr(64, 64),  wr(64, 1) ]
+    wr(c, s),   wr(s, s),  wr(s, s), wr(s, s), 
+    wr(s, s),  wr(s, s),  wr(s, s), wr(s, s),
+    wu(s, s),  wr(2s, s), wr(s, s), wu(s, s),
+    wr(2s, s), wr(s, s),  wu(s, s), wr(2s, s),
+    wr(s, s),  wr(s, 1) ]
 end
 
 init_state{I<:Image}(::Type{UNetLike{I, false}}) = Any[]
@@ -77,14 +79,17 @@ end
 function init_weights{I<:Image}(::Type{UNetLike{I, true}}, 
                                 wr :: Function = wr, 
                                 wu :: Function = wu; 
+                                potency :: Integer = 6,
                                 seed :: Integer = rand(1:10000))
 
   # Need the same convolutional weights as in the case without batch
   # normalization. However, also need to insert the trainable bn-values at
   # the right positions of the weights vector
+  s = 2^potency
 
-  weights = init_weights(UNetLike{I, false}, wr, wu, seed = seed)
-  return Any[ odd(i) ? weights[ceil(Int, i/2)] : bn(64) for i in 1:35 ]
+  weights = init_weights(UNetLike{I, false}, wr, wu, 
+                         potency = potency, seed = seed)
+  return Any[ odd(i) ? weights[ceil(Int, i/2)] : bn(s) for i in 1:35 ]
 end
 
 function init_state{I<:Image}(::Type{UNetLike{I, true}}) 
@@ -100,9 +105,11 @@ function UNetLike(I,
                   wr :: Function = wr, 
                   wu :: Function = wu; 
                   bn :: Bool = false,
+                  potency :: Integer = 6,
                   seed :: Integer = rand(1:10000))
 
-  weights = init_weights(UNetLike{I, bn}, wr, wu, seed = seed)
+  weights = init_weights(UNetLike{I, bn}, wr, wu, 
+                         potency = potency, seed = seed)
   state = init_state(UNetLike{I, bn})
 
   return UNetLike{I, bn}(weights, state)

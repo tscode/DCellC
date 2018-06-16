@@ -29,14 +29,16 @@ end
 function init_weights{I<:Image}(::Type{FCRNA{I, false}}, 
                                 wr :: Function = wr, 
                                 wu :: Function = wu; 
+                                potency :: Integer = 6,
                                 seed :: Integer = rand(1:10000))
   Knet.setseed(seed)
   c = imgchannels(I)
+  s = 2^(potency-1)
 
   return Any[
-    wr(c, 32), wr(32, 64), wr(64, 128), wr(128, 512), 
-    wu(512, 512), wr(512, 128), wu(128, 128), wr(128, 64), 
-    wu(64, 64), wr(64, 32), wr(32, 1) ]
+    wr(c, s), wr(s, 2s), wr(2s, 4s), wr(4s, 16s), 
+    wu(16s, 16s), wr(16s, 4s), wu(4s, 4s), wr(4s, 2s), 
+    wu(2s, 2s), wr(2s, s), wr(s, 1) ]
 end
 
 init_state{I<:Image}(::Type{FCRNA{I, false}}) = Any[]
@@ -63,14 +65,17 @@ end
 function init_weights{I<:Image}(::Type{FCRNA{I, true}}, 
                                 wr :: Function = wr, 
                                 wu :: Function = wu; 
+                                potency :: Integer = 6,
                                 seed :: Integer = rand(1:10000))
 
   # Need the same convolutional weights as in the case without batch
   # normalization. However, also need to insert the trainable bn-values at
   # the right positions of the weights vector
+  s = 2^(potency-1)
 
-  bm = [32, 64, 128, 512, 512, 128, 128, 64, 64, 32]
-  weights = init_weights(FCRNA{I, false}, wr, wu, seed = seed)
+  bm = [s, 2s, 4s, 16s, 16s, 4s, 4s, 2s, 2s, s]
+  weights = init_weights(FCRNA{I, false}, wr, wu, 
+                         potency = potency, seed = seed)
   return Any[ odd(i) ? weights[ceil(Int, i/2)] : bn(bm[div(i,2)]) for i in 1:21 ]
 end
 
@@ -86,9 +91,11 @@ function FCRNA(I,
                wr :: Function = wr, 
                wu :: Function = wu; 
                bn :: Bool = false,
+               potency :: Integer = 6,
                seed :: Integer = rand(1:10000))
 
-  weights = init_weights(FCRNA{I, bn}, wr, wu, seed = seed)
+  weights = init_weights(FCRNA{I, bn}, wr, wu, 
+                         potency = potency, seed = seed)
   state = init_state(FCRNA{I, bn})
 
   return FCRNA{I, bn}(weights, state)
