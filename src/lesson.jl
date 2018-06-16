@@ -19,12 +19,12 @@ mutable struct Lesson
 
   # Model
   model
-  imgtype   :: DataType
-  batchnorm :: Bool
+  imgtype :: DataType
+  kwargs  :: Vector{Any}
 
   # Algorithm
   optimizer :: String
-  lr :: Float64
+  lr        :: Float64
 
   # Image and label data
   folder     :: String
@@ -48,9 +48,9 @@ end
 # Lesson constructor
 
 function Lesson(modelc;      # model or constructor function for a model
-                folder       = "",
                 imgtype      = RGBImage,
-                batchnorm    = true,
+                kwargs       = Any[],
+                folder       = "",
                 optimizer    = "adam", # allowed: adam, rmsprop, nesterov
                 lr           = 1e-4,
                 selections   = [],
@@ -62,7 +62,7 @@ function Lesson(modelc;      # model or constructor function for a model
                 kernelsize   = 7,
                 kernelheight = 100)
 
-    return Lesson(modelc, imgtype, batchnorm, optimizer, 
+    return Lesson(modelc, imgtype, kwargs, optimizer, 
                   lr, folder, selections, imageop, epochs, 
                   batchsize, patchsize, patchmode,
                   kernelsize, kernelheight)
@@ -95,7 +95,7 @@ function train(lesson :: Lesson; kwargs...)
   if typeof(lesson.model) <: Model
     model = deepcopy(lesson.model)
   else
-    model = lesson.model(lesson.imgtype, bn=lesson.batchnorm)
+    model = lesson.model(lesson.imgtype; lesson.kwargs...)
   end
 
   if lesson.optimizer == "adam"
