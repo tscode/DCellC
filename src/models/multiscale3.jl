@@ -31,15 +31,17 @@ end
 function init_weights{I<:Image}(::Type{Multiscale3{I, false}}, 
                                 wr :: Function = wr, 
                                 wu :: Function = wu; 
+                                potency :: Integer = 8,
                                 seed :: Integer = rand(1:10000))
   Knet.setseed(seed)
   c = imgchannels(I)
+  s = 2^potency
 
   return Any[
-    wr(c, 64), wr(64, 64), wr(c, 64, (11,11)), wr(64, 64, (9,9)),
-    wr(64, 64), wr(64, 64), wr(128, 64), wr(64, 64), wu(64, 64), 
-    wr(128, 64), wr(64, 64), wu(64, 64), wr(128, 64), wr(64, 64),
-    wr(64, 1) ]
+    wr(c, s), wr(s, s), wr(c, s, (11,11)), wr(s, s, (9,9)),
+    wr(s, s), wr(s, s), wr(2s, s), wr(s, s), wu(s, s), 
+    wr(2s, s), wr(s, s), wu(s, s), wr(2s, s), wr(s, s),
+    wr(s, 1) ]
 end
 
 init_state{I<:Image}(::Type{Multiscale3{I, false}}) = Any[]
@@ -73,14 +75,16 @@ end
 function init_weights{I<:Image}(::Type{Multiscale3{I, true}}, 
                                 wr :: Function = wr, 
                                 wu :: Function = wu; 
+                                potency :: Integer = 8,
                                 seed :: Integer = rand(1:10000))
 
   # Need the same convolutional weights as in the case without batch
   # normalization. However, also need to insert the trainable bn-values at
   # the right positions of the weights vector
+  s = 2^potency
 
-  weights = init_weights(Multiscale3{I, false}, wr, wu, seed = seed)
-  return Any[ odd(i) ? weights[ceil(Int, i/2)] : bn(64) for i in 1:29 ]
+  weights = init_weights(Multiscale3{I, false}, wr, wu, potency = potency, seed = seed)
+  return Any[ odd(i) ? weights[ceil(Int, i/2)] : bn(s) for i in 1:29 ]
 end
 
 function init_state{I<:Image}(::Type{Multiscale3{I, true}}) 
@@ -95,9 +99,11 @@ function Multiscale3(I,
                      wr :: Function = wr, 
                      wu :: Function = wu; 
                      bn :: Bool = false,
+                     potency :: Integer = 8,
                      seed :: Integer = rand(1:10000))
 
-  weights = init_weights(Multiscale3{I, bn}, wr, wu, seed = seed)
+  weights = init_weights(Multiscale3{I, bn}, wr, wu, 
+                         potency = potency, seed = seed)
   state = init_state(Multiscale3{I, bn})
 
   return Multiscale3{I, bn}(weights, state)

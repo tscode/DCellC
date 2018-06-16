@@ -127,3 +127,6 @@ end
 
 crop(lmg :: LabeledImage, x, y, w, h) = crop.(lmg, x, y, w, h)
 
+function lblscale(lbl :: Label, s :: Real)
+  return Label([round.(Int, s .* c) for c in lbl])
+end
