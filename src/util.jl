@@ -68,10 +68,11 @@ function declutter(lbl :: Label, dist :: Real)
   for i in 1:n
     if !merged[i]
       count = 1
-      x, y = lbl[i]
+      x0, y0 = lbl[i]
+      x, y = x0, y0
       for j in (i+1):n
         v, w = lbl[j]
-        if !merged[j] && (x-v)^2 + (y-w)^2 <= dist^2
+        if !merged[j] && (x0-v)^2 + (y0-w)^2 <= dist^2
           x += v
           y += w
           count += 1

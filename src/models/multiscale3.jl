@@ -31,7 +31,7 @@ end
 function init_weights{I<:Image}(::Type{Multiscale3{I, false}}, 
                                 wr :: Function = wr, 
                                 wu :: Function = wu; 
-                                potency :: Integer = 8,
+                                potency :: Integer = 6,
                                 seed :: Integer = rand(1:10000))
   Knet.setseed(seed)
   c = imgchannels(I)
@@ -75,7 +75,7 @@ end
 function init_weights{I<:Image}(::Type{Multiscale3{I, true}}, 
                                 wr :: Function = wr, 
                                 wu :: Function = wu; 
-                                potency :: Integer = 8,
+                                potency :: Integer = 6,
                                 seed :: Integer = rand(1:10000))
 
   # Need the same convolutional weights as in the case without batch
@@ -99,7 +99,7 @@ function Multiscale3(I,
                      wr :: Function = wr, 
                      wu :: Function = wu; 
                      bn :: Bool = false,
-                     potency :: Integer = 8,
+                     potency :: Integer = 6,
                      seed :: Integer = rand(1:10000))
 
   weights = init_weights(Multiscale3{I, bn}, wr, wu, 
