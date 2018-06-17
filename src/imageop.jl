@@ -239,11 +239,11 @@ end
 Offset(c :: Float64) = Offset((c,c,c))
 
 function apply(o :: Offset, img :: GreyscaleImage, lbl :: Label)
-  return I(imgdata(data) + mean(o.c)), lbl
+  return GreyscaleImage(imgdata(img) + mean(o.c)), lbl
 end
 
 function apply(o :: Offset, img :: RGBImage, lbl :: Label)
-  return I(imgdata(data) .+ reshape([o.c...], (1,1,3))), lbl
+  return RGBImage(imgdata(img) .+ reshape([o.c...], (1,1,3))), lbl
 end
 
 # --------------------------------------------------------------------------- #

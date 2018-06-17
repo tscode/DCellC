@@ -32,7 +32,7 @@ end
 function init_weights{I <: Image}(::Type{UNetLike{I, false}}, 
                                   wr :: Function = wr, 
                                   wu :: Function = wu; 
-                                  potency :: Integer = 6;
+                                  potency :: Integer = 6,
                                   seed :: Integer = rand(1:10000))
 
   Knet.setseed(seed)
